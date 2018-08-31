@@ -10,7 +10,7 @@ Supported functions:
 #### Usage
 Create a client with:
 ```
-from yale-smart-alarm-client import YaleSmartAlarmClient
+from yalesmartalarmclient import YaleSmartAlarmClient
 client = YaleSmartAlarmClient(username, password)
 ```
 where username and password are your Yale Smart Alarm credentials.
