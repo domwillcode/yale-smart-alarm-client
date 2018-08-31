@@ -28,3 +28,6 @@ fabric.properties
 /example.py
 
 __pycache__/
+dist/
+build/
+*.egg-info/
