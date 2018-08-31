@@ -10,7 +10,7 @@ Supported functions:
 #### Usage
 Create a client with:
 ```
-from yalesmartalarmclient import YaleSmartAlarmClient
+from yalesmartalarmclient.client import YaleSmartAlarmClient
 client = YaleSmartAlarmClient(username, password)
 ```
 where username and password are your Yale Smart Alarm credentials.
@@ -25,11 +25,11 @@ or
 ```
 client.set_alarm_state(<mode>)
 ```
-where 'mode' is:
+where 'mode' is one of:
 ```
-from YALE_STATE_ARM_FULL
-YALE_STATE_ARM_PARTIAL
-YALE_STATE_DISARM
+from yalesmartalarmclient.client import (YALE_STATE_ARM_PARTIAL,
+                                         YALE_STATE_DISARM,
+                                         YALE_STATE_ARM_FULL)
 ```
 
 Is the alarm armed fully or partially:
@@ -39,5 +39,5 @@ client.is_armed() # == True
 
 or return alarm status. eg.
 ```
-client.get_armed_status() is client.YALE_STATE_ARM_FULL
+client.get_armed_status() is YALE_STATE_ARM_FULL
 ```

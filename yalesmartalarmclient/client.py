@@ -1,5 +1,8 @@
-import logging
+#!/usr/bin/env python
+"""Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API.
+"""
 
+import logging
 import requests
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,6 +24,9 @@ class YaleSmartAlarmClient:
     _ENDPOINT_GET_MODE = "https://www.yalehomesystem.co.uk/homeportal/api/panel/get_panel_mode"
     _ENDPOINT_SET_MODE = "https://www.yalehomesystem.co.uk/homeportal/api/panel/set_panel_mode"
 
+    _REQUEST_PARAM_AREA="area"
+    _REQUEST_PARAM_MODE="mode"
+
     def __init__(self, username, password, area_id=1):
         self.username = username
         self.password = password
@@ -33,7 +39,7 @@ class YaleSmartAlarmClient:
 
     def get_armed_status(self):
         params = {
-            "area": self.area_id
+            self._REQUEST_PARAM_AREA: self.area_id
         }
 
         alarm_state = self._post_authenticated(self._ENDPOINT_GET_MODE, params=params)
@@ -41,8 +47,8 @@ class YaleSmartAlarmClient:
 
     def set_armed_status(self, mode):
         params = {
-            "area": self.area_id,
-            "mode": mode
+            self._REQUEST_PARAM_AREA: self.area_id,
+            self._REQUEST_PARAM_MODE: mode
         }
 
         return self._post_authenticated(self._ENDPOINT_SET_MODE, params=params)
