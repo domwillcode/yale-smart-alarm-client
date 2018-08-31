@@ -89,11 +89,15 @@ class YaleSmartAlarmClient:
             "password": self.password
         }
 
+        _LOGGER.debug("Attempting login")
+
         response = requests.post(self._ENDPOINT_LOGIN, data=payload)
 
         data = response.json()
+        _LOGGER.debug("Login reponse: {}".format(data))
         if data.get("result") is not self.YALE_CODE_RESULT_SUCCESS:
-            raise Exception("Failed to authenticate with Yale Smart Alarm.")
+            raise Exception("Failed to authenticate with Yale Smart Alarm. Expecting result code {} in {}".format(
+                            self.YALE_CODE_RESULT_SUCCESS, data))
 
         _LOGGER.info("Login to Yale Alarm API successful.")
 
