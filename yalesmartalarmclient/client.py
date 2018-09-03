@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API.
+
+See https://github.com/domwillcode/yale-smart-alarm-client for more information.
 """
 
 import logging
@@ -10,6 +12,11 @@ _LOGGER = logging.getLogger(__name__)
 YALE_STATE_ARM_FULL = "arm"
 YALE_STATE_ARM_PARTIAL = "home"
 YALE_STATE_DISARM = "disarm"
+
+
+class AuthenticationError(Exception):
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
 
 
 class YaleSmartAlarmClient:
@@ -26,6 +33,8 @@ class YaleSmartAlarmClient:
 
     _REQUEST_PARAM_AREA="area"
     _REQUEST_PARAM_MODE="mode"
+
+    _DEFAULT_REQUEST_TIMEOUT = 5
 
     def __init__(self, username, password, area_id=1):
         self.username = username
@@ -74,11 +83,11 @@ class YaleSmartAlarmClient:
         return False
 
     def _post_authenticated(self, endpoint, params=None):
-        response = requests.post(endpoint, params=params, cookies=self.cookies)
+        response = requests.post(endpoint, params=params, cookies=self.cookies, timeout=self._DEFAULT_REQUEST_TIMEOUT)
         data = response.json()
         if data.get('code') == self.YALE_CODE_AUTHENTICATION_ERROR:
             self._login()
-            response = requests.post(endpoint, params=params, cookies=self.cookies)
+            response = requests.post(endpoint, params=params, cookies=self.cookies, timeout=self._DEFAULT_REQUEST_TIMEOUT)
             data = response.json()
 
         return data
@@ -91,13 +100,14 @@ class YaleSmartAlarmClient:
 
         _LOGGER.debug("Attempting login")
 
-        response = requests.post(self._ENDPOINT_LOGIN, data=payload)
+        response = requests.post(self._ENDPOINT_LOGIN, data=payload, timeout=self._DEFAULT_REQUEST_TIMEOUT)
 
         data = response.json()
         _LOGGER.debug("Login reponse: {}".format(data))
         if data.get("result") is not self.YALE_CODE_RESULT_SUCCESS:
-            raise Exception("Failed to authenticate with Yale Smart Alarm. Expecting result code {} in {}".format(
+            _LOGGER.error("Failed to authenticate with Yale Smart Alarm. Expecting result code {} in {}".format(
                             self.YALE_CODE_RESULT_SUCCESS, data))
+            raise AuthenticationError("Failed to authenticate with Yale Smart Alarm. Check credentials.")
 
         _LOGGER.info("Login to Yale Alarm API successful.")
 
@@ -110,7 +120,7 @@ class YaleSmartAlarmClient:
         return self.token
 
     def _logout(self):
-        requests.post(self._ENDPOINT_LOGOUT, cookies=self.cookies)
+        requests.post(self._ENDPOINT_LOGOUT, cookies=self.cookies, timeout=self._DEFAULT_REQUEST_TIMEOUT)
         _LOGGER.info("Logged out of Yale Alarm API")
 
     def _generate_cookies(self, token):
