@@ -105,7 +105,7 @@ class YaleSmartAlarmClient:
         data = response.json()
         _LOGGER.debug("Login reponse: {}".format(data))
         if data.get("result") is not self.YALE_CODE_RESULT_SUCCESS:
-            _LOGGER.error("Failed to authenticate with Yale Smart Alarm. Expecting result code {} in {}".format(
+            _LOGGER.debug("Failed to authenticate with Yale Smart Alarm. Expecting result code {} in {}".format(
                             self.YALE_CODE_RESULT_SUCCESS, data))
             raise AuthenticationError("Failed to authenticate with Yale Smart Alarm. Check credentials.")
 
