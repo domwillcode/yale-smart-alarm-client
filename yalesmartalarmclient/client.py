@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API.
+""Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API.
 
 See https://github.com/domwillcode/yale-smart-alarm-client for more information.
 """
@@ -13,23 +13,19 @@ YALE_STATE_ARM_FULL = "arm"
 YALE_STATE_ARM_PARTIAL = "home"
 YALE_STATE_DISARM = "disarm"
 
-
 class AuthenticationError(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
-
 class YaleSmartAlarmClient:
-    YALE_CODE_AUTHENTICATION_ERROR = '999'
-    YALE_CODE_RESULT_SUCCESS = '1'
-    YALE_CODE_RESULT_FAIL = '0'
+    YALE_API_CODE = '000'
 
-    YALE_AUTHENTICATION_TOKEN_NAME = 'PHPSESSID'
+    YALE_AUTHENTICATION_REFRESH_TOKEN = 'refresh_token'
+    YALE_AUTHENTICATION_ACCESS_TOKEN = 'access_token'
 
-    _ENDPOINT_LOGIN = "https://www.yalehomesystem.co.uk/homeportal/api/login/check_login/"
-    _ENDPOINT_LOGOUT = "https://www.yalehomesystem.co.uk/homeportal/api/logout/"
-    _ENDPOINT_GET_MODE = "https://www.yalehomesystem.co.uk/homeportal/api/panel/get_panel_mode"
-    _ENDPOINT_SET_MODE = "https://www.yalehomesystem.co.uk/homeportal/api/panel/set_panel_mode"
+    YALE_AUTH_TOKEN = 'VnVWWDZYVjlXSUNzVHJhcUVpdVNCUHBwZ3ZPakxUeXNsRU1LUHBjdTpkd3RPbE15WEtENUJ5ZW1GWHV0am55eGhrc0U3V0ZFY2p0dFcyOXRaSWNuWHlSWHFsWVBEZ1BSZE1xczF4R3VwVTlxa1o4UE5ubGlQanY5Z2hBZFFtMHpsM0h4V3dlS0ZBcGZzakpMcW1GMm1HR1lXRlpad01MRkw3MGR0bmNndQ=='
+
+    _ENDPOINT = "https://mob.yalehomesystem.co.uk:6013/yapi"
 
     _REQUEST_PARAM_AREA="area"
     _REQUEST_PARAM_MODE="mode"
@@ -43,16 +39,11 @@ class YaleSmartAlarmClient:
 
         self._login()
 
-    def close(self):
-        self._logout()
-
     def get_armed_status(self):
-        params = {
-            self._REQUEST_PARAM_AREA: self.area_id
-        }
 
-        alarm_state = self._post_authenticated(self._ENDPOINT_GET_MODE, params=params)
-        return alarm_state.get('message')[0].get('mode')
+        alarm_state = self._post_authenticated('/api/panel/mode/')
+        
+        return alarm_state.get('data')[0].get('mode')
 
     def set_armed_status(self, mode):
         params = {
@@ -60,7 +51,7 @@ class YaleSmartAlarmClient:
             self._REQUEST_PARAM_MODE: mode
         }
 
-        return self._post_authenticated(self._ENDPOINT_SET_MODE, params=params)
+        return self._post_authenticated('/api/panel/mode/', params=params)
 
     def arm_full(self):
         self.set_armed_status(YALE_STATE_ARM_FULL)
@@ -83,47 +74,59 @@ class YaleSmartAlarmClient:
         return False
 
     def _post_authenticated(self, endpoint, params=None):
-        response = requests.post(endpoint, params=params, cookies=self.cookies, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+        url = self._ENDPOINT + endpoint
+
+        headers = {
+            "Authorization": "Bearer " + self.access_token,
+            "Content-Type": 'application/x-www-form-urlencoded'
+        };
+
+        if params is None:
+            response = requests.get(url, headers=headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+        else:
+            response = requests.post(url, headers=headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+
         data = response.json()
-        if data.get('code') == self.YALE_CODE_AUTHENTICATION_ERROR:
+        
+        if data.get('code') != self.YALE_API_CODE:
             self._login()
-            response = requests.post(endpoint, params=params, cookies=self.cookies, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+            response = requests.post(url, params=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
             data = response.json()
 
         return data
 
     def _login(self):
+        url = self._ENDPOINT + '/o/token/'
+
         payload = {
-            "id": self.username,
+            "grant_type": "password",
+            "username": self.username,
             "password": self.password
+        }
+
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Basic " + self.YALE_AUTH_TOKEN,
+            "Content-Type": 'application/x-www-form-urlencoded'
         }
 
         _LOGGER.debug("Attempting login")
 
-        response = requests.post(self._ENDPOINT_LOGIN, data=payload, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+        response = requests.post(url, data=payload, headers=headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
 
         data = response.json()
-        _LOGGER.debug("Login reponse: {}".format(data))
-        if data.get("result") is not self.YALE_CODE_RESULT_SUCCESS:
-            _LOGGER.debug("Failed to authenticate with Yale Smart Alarm. Expecting result code {} in {}".format(
-                            self.YALE_CODE_RESULT_SUCCESS, data))
+        _LOGGER.debug("Login response: {}".format(data))
+        if data.get("error"):
+            _LOGGER.debug("Failed to authenticate with Yale Smart Alarm. Error: {}".format(
+                            data.error_description))
             raise AuthenticationError("Failed to authenticate with Yale Smart Alarm. Check credentials.")
 
         _LOGGER.info("Login to Yale Alarm API successful.")
 
-        self.token = response.cookies.get(self.YALE_AUTHENTICATION_TOKEN_NAME)
-        if self.token is None:
+        self.refresh_token = data.get(self.YALE_AUTHENTICATION_REFRESH_TOKEN)
+        self.access_token = data.get(self.YALE_AUTHENTICATION_ACCESS_TOKEN)
+        if self.refresh_token is None or self.access_token is None:
             raise Exception("Failed to authenticate with Yale Smart Alarm. Invalid token.")
 
-        self.cookies = self._generate_cookies(self.token)
+        return self.access_token,self.refresh_token
 
-        return self.token
-
-    def _logout(self):
-        requests.post(self._ENDPOINT_LOGOUT, cookies=self.cookies, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-        _LOGGER.info("Logged out of Yale Alarm API")
-
-    def _generate_cookies(self, token):
-        cookies = requests.cookies.RequestsCookieJar()
-        cookies.set(self.YALE_AUTHENTICATION_TOKEN_NAME, token)
-        return cookies
