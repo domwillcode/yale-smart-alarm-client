@@ -5,6 +5,7 @@ See https://github.com/domwillcode/yale-smart-alarm-client for more information.
 """
 
 import logging
+
 import requests
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class YaleSmartAlarmClient:
 
     YALE_AUTHENTICATION_TOKEN_NAME = 'PHPSESSID'
 
-    _HOST= "https://mob.yalehomesystem.co.uk:6013/yapi"
+    _HOST = "https://mob.yalehomesystem.co.uk:6013/yapi"
     _ENDPOINT_TOKEN = "/o/token/"
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
     _ENDPOINT_SET_MODE = "/api/panel/mode/"
@@ -35,8 +36,8 @@ class YaleSmartAlarmClient:
     _YALE_AUTHENTICATION_REFRESH_TOKEN = 'refresh_token'
     _YALE_AUTHENTICATION_ACCESS_TOKEN = 'access_token'
 
-    _REQUEST_PARAM_AREA="area"
-    _REQUEST_PARAM_MODE="mode"
+    _REQUEST_PARAM_AREA = "area"
+    _REQUEST_PARAM_MODE = "mode"
 
     _DEFAULT_REQUEST_TIMEOUT = 5
 
@@ -75,7 +76,8 @@ class YaleSmartAlarmClient:
 
         if alarm_code == YALE_STATE_ARM_FULL:
             return True
-        elif alarm_code == YALE_STATE_ARM_PARTIAL:
+
+        if alarm_code == YALE_STATE_ARM_PARTIAL:
             return True
 
         return False
@@ -94,7 +96,7 @@ class YaleSmartAlarmClient:
 
         if data.get('code') != self.YALE_CODE_RESULT_SUCCESS:
             self._login()
-            response = requests.post(url, params=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+            response = requests.get(url, timeout=self._DEFAULT_REQUEST_TIMEOUT)
             data = response.json()
 
         return data
@@ -131,17 +133,15 @@ class YaleSmartAlarmClient:
             "Content-Type": 'application/x-www-form-urlencoded'
         }
 
-
         _LOGGER.debug("Attempting login")
 
         url = self._HOST + self._ENDPOINT_TOKEN
 
         response = requests.post(url, headers=headers, data=payload, timeout=self._DEFAULT_REQUEST_TIMEOUT)
         data = response.json()
-        _LOGGER.debug("Login response: {}".format(data))
+        _LOGGER.debug("Login response: %s", data)
         if data.get("error"):
-            _LOGGER.debug("Failed to authenticate with Yale Smart Alarm. Error: {}".format(
-                data.error_description))
+            _LOGGER.debug("Failed to authenticate with Yale Smart Alarm. Error: %s", data.error_description)
             raise AuthenticationError("Failed to authenticate with Yale Smart Alarm. Check credentials.")
 
         _LOGGER.info("Login to Yale Alarm API successful.")
