@@ -21,10 +21,7 @@ class AuthenticationError(Exception):
 
 
 class YaleSmartAlarmClient:
-    YALE_CODE_AUTHENTICATION_ERROR = '999'
     YALE_CODE_RESULT_SUCCESS = '000'
-
-    YALE_AUTHENTICATION_TOKEN_NAME = 'PHPSESSID'
 
     _HOST = "https://mob.yalehomesystem.co.uk:6013/yapi"
     _ENDPOINT_TOKEN = "/o/token/"
