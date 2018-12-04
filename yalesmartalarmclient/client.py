@@ -23,10 +23,12 @@ class AuthenticationError(Exception):
 class YaleSmartAlarmClient:
     YALE_CODE_RESULT_SUCCESS = '000'
 
-    _HOST = "https://mob.yalehomesystem.co.uk:6013/yapi"
+    _HOST = "https://mob.yalehomesystem.co.uk/yapi"
     _ENDPOINT_TOKEN = "/o/token/"
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
     _ENDPOINT_SET_MODE = "/api/panel/mode/"
+    _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
+    _ENDPOINT_DEVICES = "/api/panel/device/"
 
     _YALE_AUTH_TOKEN = 'VnVWWDZYVjlXSUNzVHJhcUVpdVNCUHBwZ3ZPakxUeXNsRU1LUHBjdTpkd3RPbE15WEtENUJ5ZW1GWHV0am55eGhrc0U3V0ZFY2p0dFcyOXRaSWNuWHlSWHFsWVBEZ1BSZE1xczF4R3VwVTlxa1o4UE5ubGlQanY5Z2hBZFFtMHpsM0h4V3dlS0ZBcGZzakpMcW1GMm1HR1lXRlpad01MRkw3MGR0bmNndQ=='
 
@@ -44,6 +46,19 @@ class YaleSmartAlarmClient:
         self.area_id = area_id
 
         self._login()
+
+    def get_doorman_state(self):
+        devices = self._get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        list = []
+        for x in devices['data']:
+            if x['type'] == "device_type.door_lock":
+                state = x['status1']
+                if state == 'device_status.unlock':
+                    state = "Unlocked"
+                elif state == "device_status.lock":
+                    state = "Locked";
+                list.append({x['name']:state})
+        return list
 
     def get_armed_status(self):
         alarm_state = self._get_authenticated(self._ENDPOINT_GET_MODE)
