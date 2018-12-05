@@ -52,7 +52,7 @@ class YaleSmartAlarmClient:
         for dev in devices['data']:
             if dev['type'] == "device_type.door_lock":
                 state = dev['status1']
-                id = dev['name']
+                name = dev['name']
                 lock_status_str = dev['minigw_lock_status']
                 if lock_status_str != '':
                     lock_status = int(lock_status_str, 16)
@@ -70,7 +70,7 @@ class YaleSmartAlarmClient:
                     state = "Unlocked"
                 else:
                     state = "Unknown"
-                list.append({id:state})
+                list.append({name:state})
         return list
 
     def get_armed_status(self):
