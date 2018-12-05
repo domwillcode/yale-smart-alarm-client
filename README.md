@@ -41,3 +41,8 @@ or return alarm status. eg.
 ```
 client.get_armed_status() is YALE_STATE_ARM_FULL
 ```
+
+Get Doorman states:
+```
+client.get_doorman_state() # Returns an array of locks and status
+```
