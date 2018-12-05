@@ -28,7 +28,6 @@ class YaleSmartAlarmClient:
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
     _ENDPOINT_SET_MODE = "/api/panel/mode/"
     _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
-    _ENDPOINT_DEVICES = "/api/panel/device/"
 
     _YALE_AUTH_TOKEN = 'VnVWWDZYVjlXSUNzVHJhcUVpdVNCUHBwZ3ZPakxUeXNsRU1LUHBjdTpkd3RPbE15WEtENUJ5ZW1GWHV0am55eGhrc0U3V0ZFY2p0dFcyOXRaSWNuWHlSWHFsWVBEZ1BSZE1xczF4R3VwVTlxa1o4UE5ubGlQanY5Z2hBZFFtMHpsM0h4V3dlS0ZBcGZzakpMcW1GMm1HR1lXRlpad01MRkw3MGR0bmNndQ=='
 
@@ -50,14 +49,28 @@ class YaleSmartAlarmClient:
     def get_doorman_state(self):
         devices = self._get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         list = []
-        for x in devices['data']:
-            if x['type'] == "device_type.door_lock":
-                state = x['status1']
-                if state == 'device_status.unlock':
+        for dev in devices['data']:
+            if dev['type'] == "device_type.door_lock":
+                state = dev['status1']
+                id = dev['name']
+                lock_status_str = dev['minigw_lock_status']
+                if lock_status_str != '':
+                    lock_status = int(lock_status_str, 16)
+                    closed = ((lock_status & 16) == 16)
+                    locked = ((lock_status & 1) == 1)
+                    if closed == True and locked == True:
+                        state = "Locked"
+                    elif closed == True and locked == False:
+                        state = "Unlocked"
+                    elif closed == False:
+                        state = "Door open"
+                elif "device_status.lock" in state:
+                    state = "Locked"
+                elif "device_status.unlock" in state:
                     state = "Unlocked"
-                elif state == "device_status.lock":
-                    state = "Locked";
-                list.append({x['name']:state})
+                else:
+                    state = "Unknown"
+                list.append({id:state})
         return list
 
     def get_armed_status(self):
