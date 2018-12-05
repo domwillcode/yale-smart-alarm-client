@@ -25,6 +25,7 @@ class YaleSmartAlarmClient:
 
     _HOST = "https://mob.yalehomesystem.co.uk/yapi"
     _ENDPOINT_TOKEN = "/o/token/"
+    _ENDPOINT_SERVICES = "/services/"
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
     _ENDPOINT_SET_MODE = "/api/panel/mode/"
     _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
@@ -145,6 +146,30 @@ class YaleSmartAlarmClient:
 
         return data
 
+    def _get_services(self):
+        url = self._HOST + self._ENDPOINT_SERVICES
+
+        headers = {
+            "Authorization": "Bearer " + self.access_token,
+            "Content-Type": 'application/x-www-form-urlencoded'
+        }
+
+        _LOGGER.debug("Fetch services URL")
+
+        response = requests.get(url, headers=headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+        data = response.json()
+        url = data.get('yapi')
+        if url is not None:
+            if len(url) > 0:
+                _LOGGER.debug("Yale URL updated: " + url)
+                if url.endswith('/'):
+                    url = url[:-1]
+                self._HOST = url
+            else:
+                _LOGGER.debug("Services URL is empty")
+        else:
+            _LOGGER.debug("Unable to fetch services")
+
     def _login(self):
 
         payload = {
@@ -176,4 +201,5 @@ class YaleSmartAlarmClient:
         if self.refresh_token is None or self.access_token is None:
             raise Exception("Failed to authenticate with Yale Smart Alarm. Invalid token.")
 
+        self._get_services()
         return self.access_token, self.refresh_token
