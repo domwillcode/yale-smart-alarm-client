@@ -47,9 +47,9 @@ class YaleSmartAlarmClient:
 
         self._login()
 
-    def get_doorman_state(self):
+    def get_locks_status(self):
         devices = self._get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        list = []
+        list = {}
         for dev in devices['data']:
             if dev['type'] == "device_type.door_lock":
                 state = dev['status1']
@@ -71,7 +71,7 @@ class YaleSmartAlarmClient:
                     state = "Unlocked"
                 else:
                     state = "Unknown"
-                list.append({name:state})
+                list[name] = state
         return list
 
     def get_armed_status(self):
