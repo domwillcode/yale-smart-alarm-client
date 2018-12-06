@@ -49,7 +49,7 @@ class YaleSmartAlarmClient:
 
     def get_locks_status(self):
         devices = self._get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        list = {}
+        locks = {}
         for dev in devices['data']:
             if dev['type'] == "device_type.door_lock":
                 state = dev['status1']
@@ -71,8 +71,8 @@ class YaleSmartAlarmClient:
                     state = "Unlocked"
                 else:
                     state = "Unknown"
-                list[name] = state
-        return list
+                locks[name] = state
+        return locks
 
     def get_armed_status(self):
         alarm_state = self._get_authenticated(self._ENDPOINT_GET_MODE)
