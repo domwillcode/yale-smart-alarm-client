@@ -42,9 +42,16 @@ class YaleSmartAlarmClient:
         self.username = username
         self.password = password
         self.area_id = area_id
+        self.refresh_token = None
+        
+        self._authorize()
 
-        self._login()
-
+    @property
+    def auth_headers(self):
+        return {
+            "Authorization": "Bearer " + self.access_token
+        }
+        
     def get_armed_status(self):
         alarm_state = self._get_authenticated(self._ENDPOINT_GET_MODE)
 
@@ -81,67 +88,53 @@ class YaleSmartAlarmClient:
 
     def _get_authenticated(self, endpoint):
         url = self._HOST + endpoint
+        response = requests.get(url, headers=self.auth_headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+        if response.status_code != 200:
+            self._authorize()
+            response = requests.get(url, headers=self.auth_headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
 
-        headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "Content-Type": 'application/x-www-form-urlencoded'
-        }
-
-        response = requests.get(url, headers=headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-
-        data = response.json()
-
-        if data.get('code') != self.YALE_CODE_RESULT_SUCCESS:
-            self._login()
-            response = requests.get(url, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-            data = response.json()
-
-        return data
+        return response.json()
 
     def _post_authenticated(self, endpoint, params=None):
         url = self._HOST + endpoint
+        response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
+        if response.status_code != 200:
+            self._authorize()
+            response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
 
+        return response.json()
+
+    def _authorize(self):
+        if self.refresh_token:
+            payload = {
+                "grant_type": "refresh_token",
+                "refresh_token": self.refresh_token
+            }
+        else:
+            payload = {
+                "grant_type": "password",
+                "username": self.username,
+                "password": self.password
+            }
         headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "Content-Type": 'application/x-www-form-urlencoded'
-        }
-
-        response = requests.post(url, headers=headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-
-        data = response.json()
-
-        if data.get('code') != self.YALE_CODE_RESULT_SUCCESS:
-            self._login()
-            response = requests.post(url, params=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-            data = response.json()
-
-        return data
-
-    def _login(self):
-
-        payload = {
-            "grant_type": "password",
-            "username": self.username,
-            "password": self.password
-        }
-        headers = {
-            "Accept": "application/json",
             "Authorization": "Basic " + self._YALE_AUTH_TOKEN,
-            "Content-Type": 'application/x-www-form-urlencoded'
         }
-
-        _LOGGER.debug("Attempting login")
-
         url = self._HOST + self._ENDPOINT_TOKEN
+
+        _LOGGER.debug("Attempting authorization")
 
         response = requests.post(url, headers=headers, data=payload, timeout=self._DEFAULT_REQUEST_TIMEOUT)
         data = response.json()
-        _LOGGER.debug("Login response: %s", data)
+        _LOGGER.debug("Authorization response: %s", data)
         if data.get("error"):
+            if self.refresh_token:
+                # Maybe refresh_token has expired, try again with password
+                self.refresh_token = None
+                return self._authorize()
             _LOGGER.debug("Failed to authenticate with Yale Smart Alarm. Error: %s", data.error_description)
             raise AuthenticationError("Failed to authenticate with Yale Smart Alarm. Check credentials.")
 
-        _LOGGER.info("Login to Yale Alarm API successful.")
+        _LOGGER.info("Authorization to Yale Alarm API successful.")
 
         self.refresh_token = data.get(self._YALE_AUTHENTICATION_REFRESH_TOKEN)
         self.access_token = data.get(self._YALE_AUTHENTICATION_ACCESS_TOKEN)
