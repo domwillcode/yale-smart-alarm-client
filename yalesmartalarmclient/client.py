@@ -58,7 +58,6 @@ class YaleSmartAlarmClient:
             "Authorization": "Bearer " + self.access_token
         }
         
-    @property
     def get_locks_status(self):
         devices = self._get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         locks = {}
