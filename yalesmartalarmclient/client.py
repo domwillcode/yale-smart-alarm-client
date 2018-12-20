@@ -23,10 +23,12 @@ class AuthenticationError(Exception):
 class YaleSmartAlarmClient:
     YALE_CODE_RESULT_SUCCESS = '000'
 
-    _HOST = "https://mob.yalehomesystem.co.uk:6013/yapi"
+    _HOST = "https://mob.yalehomesystem.co.uk/yapi"
     _ENDPOINT_TOKEN = "/o/token/"
+    _ENDPOINT_SERVICES = "/services/"
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
     _ENDPOINT_SET_MODE = "/api/panel/mode/"
+    _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
 
     _YALE_AUTH_TOKEN = 'VnVWWDZYVjlXSUNzVHJhcUVpdVNCUHBwZ3ZPakxUeXNsRU1LUHBjdTpkd3RPbE15WEtENUJ5ZW1GWHV0am55eGhrc0U3V0ZFY2p0dFcyOXRaSWNuWHlSWHFsWVBEZ1BSZE1xczF4R3VwVTlxa1o4UE5ubGlQanY5Z2hBZFFtMHpsM0h4V3dlS0ZBcGZzakpMcW1GMm1HR1lXRlpad01MRkw3MGR0bmNndQ=='
 
@@ -52,6 +54,33 @@ class YaleSmartAlarmClient:
             "Authorization": "Bearer " + self.access_token
         }
         
+    def get_locks_status(self):
+        devices = self._get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        locks = {}
+        for dev in devices['data']:
+            if dev['type'] == "device_type.door_lock":
+                state = dev['status1']
+                name = dev['name']
+                lock_status_str = dev['minigw_lock_status']
+                if lock_status_str != '':
+                    lock_status = int(lock_status_str, 16)
+                    closed = ((lock_status & 16) == 16)
+                    locked = ((lock_status & 1) == 1)
+                    if closed == True and locked == True:
+                        state = "Locked"
+                    elif closed == True and locked == False:
+                        state = "Unlocked"
+                    elif closed == False:
+                        state = "Door open"
+                elif "device_status.lock" in state:
+                    state = "Locked"
+                elif "device_status.unlock" in state:
+                    state = "Unlocked"
+                else:
+                    state = "Unknown"
+                locks[name] = state
+        return locks
+
     def get_armed_status(self):
         alarm_state = self._get_authenticated(self._ENDPOINT_GET_MODE)
 
@@ -104,6 +133,20 @@ class YaleSmartAlarmClient:
 
         return response.json()
 
+    def _get_services(self):
+        data = self._get_authenticated(self._ENDPOINT_SERVICES)
+        url = data.get('yapi')
+        if url is not None:
+            if len(url) > 0:
+                _LOGGER.debug("Yale URL updated: " + url)
+                if url.endswith('/'):
+                    url = url[:-1]
+                self._HOST = url
+            else:
+                _LOGGER.debug("Services URL is empty")
+        else:
+            _LOGGER.debug("Unable to fetch services")
+
     def _authorize(self):
         if self.refresh_token:
             payload = {
@@ -141,4 +184,5 @@ class YaleSmartAlarmClient:
         if self.refresh_token is None or self.access_token is None:
             raise Exception("Failed to authenticate with Yale Smart Alarm. Invalid token.")
 
+        self._get_services()
         return self.access_token, self.refresh_token
