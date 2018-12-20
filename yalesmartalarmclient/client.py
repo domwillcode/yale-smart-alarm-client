@@ -14,6 +14,10 @@ YALE_STATE_ARM_FULL = "arm"
 YALE_STATE_ARM_PARTIAL = "home"
 YALE_STATE_DISARM = "disarm"
 
+YALE_LOCK_STATE_LOCKED = "locked"
+YALE_LOCK_STATE_UNLOCKED = "unlocked"
+YALE_LOCK_STATE_DOOR_OPEN = "dooropen"
+YALE_LOCK_STATE_UNKNOWN = "unknown"
 
 class AuthenticationError(Exception):
     def __init__(self, *args, **kwargs):
@@ -57,27 +61,27 @@ class YaleSmartAlarmClient:
     def get_locks_status(self):
         devices = self._get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         locks = {}
-        for dev in devices['data']:
-            if dev['type'] == "device_type.door_lock":
-                state = dev['status1']
-                name = dev['name']
-                lock_status_str = dev['minigw_lock_status']
+        for device in devices['data']:
+            if device['type'] == "device_type.door_lock":
+                state = device['status1']
+                name = device['name']
+                lock_status_str = device['minigw_lock_status']
                 if lock_status_str != '':
                     lock_status = int(lock_status_str, 16)
                     closed = ((lock_status & 16) == 16)
                     locked = ((lock_status & 1) == 1)
-                    if closed == True and locked == True:
-                        state = "Locked"
-                    elif closed == True and locked == False:
-                        state = "Unlocked"
-                    elif closed == False:
-                        state = "Door open"
+                    if closed is True and locked is True:
+                        state = YALE_LOCK_STATE_LOCKED
+                    elif closed is True and locked is False:
+                        state = YALE_LOCK_STATE_UNLOCKED
+                    elif not closed:
+                        state = YALE_LOCK_STATE_DOOR_OPEN
                 elif "device_status.lock" in state:
-                    state = "Locked"
+                    state = YALE_LOCK_STATE_LOCKED
                 elif "device_status.unlock" in state:
-                    state = "Unlocked"
+                    state = YALE_LOCK_STATE_UNLOCKED
                 else:
-                    state = "Unknown"
+                    state = YALE_LOCK_STATE_UNKNOWN
                 locks[name] = state
         return locks
 
@@ -133,7 +137,7 @@ class YaleSmartAlarmClient:
 
         return response.json()
 
-    def _get_services(self):
+    def _update_services(self):
         data = self._get_authenticated(self._ENDPOINT_SERVICES)
         url = data.get('yapi')
         if url is not None:
@@ -184,5 +188,5 @@ class YaleSmartAlarmClient:
         if self.refresh_token is None or self.access_token is None:
             raise Exception("Failed to authenticate with Yale Smart Alarm. Invalid token.")
 
-        self._get_services()
+        self._update_services()
         return self.access_token, self.refresh_token
