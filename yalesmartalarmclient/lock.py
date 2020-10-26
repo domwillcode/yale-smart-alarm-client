@@ -10,14 +10,15 @@ class YaleLockState(Enum):
 
 
 class YaleLock:
-    DEVICE_TYPE = "device_type.door_lock"
-    """ 
+    """
     This is an abstraction of a remove Yale lock.
     The object created by this class attempts to reflect the remote state, and also has the possibilty of 
     locking/unlocking the lock state.
     
     Objects of this class shall usually be craeted by the lock_api class.
     """
+
+    DEVICE_TYPE: str = "device_type.door_lock"
 
     def __init__(self, device: dict, lock_api):
         self._lock_api = lock_api
@@ -85,12 +86,17 @@ class YaleLock:
     def close(self):
         """
         Attempt to close the remote lock.
-        Returns:
+        Returns: True if the API returns success
 
         """
         return self._lock_api.close_lock(lock=self)
 
     def open(self, pin_code: str):
+        """
+        Attempts to open the lock.
+
+        returns: True if the lock was opened.
+        """
         return self._lock_api.open_lock(lock=self, pin_code=pin_code)
 
 
@@ -99,22 +105,24 @@ class YaleDoorManAPI:
     Represents the yale doorman api.
 
     Example: iterating
-        >>> client = YaleClient(username, password)
+        >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
+        >>> client = YaleSmartAlarmClient(username="", password="")
         >>> for lock in client.lock_api.locks():
-        >>>     print(f"{lock}")
+        >>>     print(lock)
         >>>     lock.close()
-        >>>     print(f"{lock}")
+        >>>     print(lock)
         >>>     lock.open()
         myfrontdoor [YaleLockState.UNLOCKED]
         myfrontdoor [YaleLockState.LOCKED]
         myfrontdoor [YaleLockState.UNLOCKED]
 
     Example: getting
-        >>> client = YaleClient(username, password)
+        >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
+        >>> client = YaleSmartAlarmClient(username="", password="")
         >>> lock = client.lock_api.get("myfrondoor"):
-        >>> print(f"{lock}")
+        >>> print(lock)
         >>> lock.close()
-        >>> print(f"{lock}")
+        >>> print(lock)
         >>> lock.open()
         myfrontdoor [YaleLockState.UNLOCKED]
         myfrontdoor [YaleLockState.LOCKED]
@@ -137,9 +145,10 @@ class YaleDoorManAPI:
         Yields: the locks
 
         Example:
-            >>> client = YaleClient(username, password)
+            >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
+            >>> client = YaleSmartAlarmClient(username="", password="")
             >>> for lock in client.lock_api.locks():
-            >>>     print(f"{lock}")
+            >>>     print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
@@ -160,9 +169,10 @@ class YaleDoorManAPI:
             or None
 
         Example:
-            >>> client = YaleClient(username, password)
+            >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
+            >>> client = YaleSmartAlarmClient(username="", password="")
             >>> lock = client.lock_api.get("myfrontdoor"):
-            >>> print(f"{lock}")
+            >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
         for lock in self.locks():
@@ -173,6 +183,7 @@ class YaleDoorManAPI:
     def close_lock(self, lock: YaleLock):
         """
         Close the specified lock.  If the operation is successful the lock state will be updated to reflect this.
+
         Notes:
             the lock object has methods to do this, see YaleLock:close()
         Args:
@@ -181,10 +192,12 @@ class YaleDoorManAPI:
         Returns: True if the operation was a success.
 
         Example:
-            >>> client = YaleClient(username, password)
+            >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
+            >>> client = YaleSmartAlarmClient(username="", password="")
             >>> lock = client.lock_api.get("myfrontdoor"):
-            >>> client.lock.close_lock(lock)
-            >>> print(f"{lock}")
+            >>> client.lock_api.close_lock(lock)
+            >>> # lock.close() does the same thing!
+            >>> print(lock)
             myfrontdoor [YaleLockState.LOCKED]
         """
         params = {
@@ -204,6 +217,10 @@ class YaleDoorManAPI:
         """
         Opens the specified lock.
         If the operation is a success the local state of lock will be updated to reflect this.
+
+        Notes:
+            the lock object has methods to do this, see YaleLock:open()
+
         Args:
             lock: the lock to open
             pin_code: a valid pin code for the door.
@@ -212,10 +229,12 @@ class YaleDoorManAPI:
             True if the operation was a success.
 
         Example:
-            >>> client = YaleClient(username, password)
+            >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
+            >>> client = YaleSmartAlarmClient(username="", password="")
             >>> lock = client.lock_api.get("myfrontdoor"):
-            >>> client.lock.open_lock(lock, pin_code="123456")
-            >>> print(f"{lock}")
+            >>> client.lock_api.open_lock(lock, pin_code="123456")
+            >>> # lock.open() does the same thing!
+            >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
         params = {
