@@ -100,7 +100,7 @@ class YaleDoorManAPI:
 
     Example: iterating
         >>> client = YaleClient(username, password)
-        >>> for lock in client.lock.locks():
+        >>> for lock in client.lock_api.locks():
         >>>     print(f"{lock}")
         >>>     lock.close()
         >>>     print(f"{lock}")
@@ -111,7 +111,7 @@ class YaleDoorManAPI:
 
     Example: getting
         >>> client = YaleClient(username, password)
-        >>> lock = client.lock.get("myfrondoor"):
+        >>> lock = client.lock_api.get("myfrondoor"):
         >>> print(f"{lock}")
         >>> lock.close()
         >>> print(f"{lock}")
@@ -138,7 +138,7 @@ class YaleDoorManAPI:
 
         Example:
             >>> client = YaleClient(username, password)
-            >>> for lock in client.lock.locks():
+            >>> for lock in client.lock_api.locks():
             >>>     print(f"{lock}")
             myfrontdoor [YaleLockState.UNLOCKED]
         """
@@ -161,7 +161,7 @@ class YaleDoorManAPI:
 
         Example:
             >>> client = YaleClient(username, password)
-            >>> lock = client.lock.get("myfrontdoor"):
+            >>> lock = client.lock_api.get("myfrontdoor"):
             >>> print(f"{lock}")
             myfrontdoor [YaleLockState.UNLOCKED]
         """
@@ -182,7 +182,7 @@ class YaleDoorManAPI:
 
         Example:
             >>> client = YaleClient(username, password)
-            >>> lock = client.lock.get("myfrontdoor"):
+            >>> lock = client.lock_api.get("myfrontdoor"):
             >>> client.lock.close_lock(lock)
             >>> print(f"{lock}")
             myfrontdoor [YaleLockState.LOCKED]
@@ -213,7 +213,7 @@ class YaleDoorManAPI:
 
         Example:
             >>> client = YaleClient(username, password)
-            >>> lock = client.lock.get("myfrontdoor"):
+            >>> lock = client.lock_api.get("myfrontdoor"):
             >>> client.lock.open_lock(lock, pin_code="123456")
             >>> print(f"{lock}")
             myfrontdoor [YaleLockState.UNLOCKED]
