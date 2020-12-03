@@ -69,5 +69,9 @@ or return alarm status. eg.
 client.get_armed_status() is YALE_STATE_ARM_FULL
 ```
 
+Trigger panic button
+```
+client.trigger_panic_button()
+```
 
 

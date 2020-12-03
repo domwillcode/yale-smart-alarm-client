@@ -35,6 +35,7 @@ class YaleSmartAlarmClient:
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
     _ENDPOINT_SET_MODE = "/api/panel/mode/"
     _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
+    _ENDPOINT_PANIC_BUTTON = "/api/panel/panic/"
 
     _REQUEST_PARAM_AREA = "area"
     _REQUEST_PARAM_MODE = "mode"
@@ -46,7 +47,7 @@ class YaleSmartAlarmClient:
         self.area_id = area_id
         self.lock_api: YaleDoorManAPI = YaleDoorManAPI(auth=self.auth)
 
-    # Kept for backwards compability.
+    # Kept for backwards compatibility.
     def get_locks_status(self):
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         locks = {}
@@ -102,6 +103,9 @@ class YaleSmartAlarmClient:
         }
 
         return self.auth.post_authenticated(self._ENDPOINT_SET_MODE, params=params)
+
+    def trigger_panic_button(self):
+        self.auth.post_authenticated(self._ENDPOINT_PANIC_BUTTON)
 
     def arm_full(self):
         self.set_armed_status(YALE_STATE_ARM_FULL)
