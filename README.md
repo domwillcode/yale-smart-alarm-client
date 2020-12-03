@@ -7,7 +7,7 @@ Supported functions:
 - Disarm
 - Get alarm status
 
-#### Usage
+### Usage
 Create a client with:
 ```
 from yalesmartalarmclient.client import YaleSmartAlarmClient
@@ -15,6 +15,33 @@ client = YaleSmartAlarmClient(username, password)
 ```
 where username and password are your Yale Smart Alarm credentials.
 
+#### Locks
+Iterate the connected locks
+```pyhon
+client = YaleClient(username, password)
+for lock in client.lock_api.locks():
+    print(lock)
+```
+
+lock a single lock
+```pyhon
+lock = client.lock_api.get(name="myfrontdoor"):
+lock.close()
+```
+
+unlock:
+```pyhon
+lock = client.lock_api.get(name="myfrontdoor"):
+lock.open(pin_code="1234566")
+```
+
+DEPRECATED! Get connected locks states:
+```
+client.get_locks_status() # Returns an array of locks and status
+```
+
+
+#### Alarms
 Change the alarm state with:
 ```
 client.arm_full()
@@ -42,7 +69,5 @@ or return alarm status. eg.
 client.get_armed_status() is YALE_STATE_ARM_FULL
 ```
 
-Get connected locks states:
-```
-client.get_locks_status() # Returns an array of locks and status
-```
+
+
