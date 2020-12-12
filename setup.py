@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='yalesmartalarmclient',
     py_modules=['yalesmartalarmclient'],
-    version='0.1.7',
+    version='0.3.0',
     description='Interact with Yale Smart Alarm systems',
     long_description=long_description,
     long_description_content_type="text/markdown",
