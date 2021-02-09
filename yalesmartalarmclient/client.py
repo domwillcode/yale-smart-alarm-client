@@ -32,9 +32,9 @@ class AuthenticationError(Exception):
 class YaleSmartAlarmClient:
     YALE_CODE_RESULT_SUCCESS = '000'
 
-    _ENDPOINT_GET_MODE = "/api/panel/mode/"
-    _ENDPOINT_SET_MODE = "/api/panel/mode/"
-    _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
+    _ENDPOINT_GET_MODE = "/yapi/api/panel/mode/"
+    _ENDPOINT_SET_MODE = "/yapi/api/panel/mode/"
+    _ENDPOINT_DEVICES_STATUS = "/yapi/api/panel/device_status/"
     _ENDPOINT_PANIC_BUTTON = "/api/panel/panic"
 
     _REQUEST_PARAM_AREA = "area"

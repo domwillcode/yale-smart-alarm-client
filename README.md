@@ -6,6 +6,7 @@ Supported functions:
 - Arm partial (away/night)
 - Disarm
 - Get alarm status
+- Trigger alarm panic button
 
 ### Usage
 Create a client with:

@@ -17,9 +17,9 @@ class YaleAuth:
     """
     YALE_CODE_RESULT_SUCCESS = '000'
 
-    _HOST = "https://mob.yalehomesystem.co.uk/yapi"
-    _ENDPOINT_TOKEN = "/o/token/"
-    _ENDPOINT_SERVICES = "/services/"
+    _HOST = "https://mob.yalehomesystem.co.uk"
+    _ENDPOINT_TOKEN = "/yapi/o/token/"
+    _ENDPOINT_SERVICES = "/yapi/services/"
     _YALE_AUTH_TOKEN = 'VnVWWDZYVjlXSUNzVHJhcUVpdVNCUHBwZ3ZPakxUeXNsRU1LUHBjdTpkd3RPbE15WEtENUJ5ZW1GWHV0am55eGhrc0U3V0ZFY2p0dFcyOXRaSWNuWHlSWHFsWVBEZ1BSZE1xczF4R3VwVTlxa1o4UE5ubGlQanY5Z2hBZFFtMHpsM0h4V3dlS0ZBcGZzakpMcW1GMm1HR1lXRlpad01MRkw3MGR0bmNndQ=='
 
     _YALE_AUTHENTICATION_REFRESH_TOKEN = 'refresh_token'
@@ -51,7 +51,7 @@ class YaleAuth:
             endpoint: parts of an url
 
         Returns:
-            a dictionary with the reponse.
+            a dictionary with the response.
 
         """
         url = self._HOST + endpoint
