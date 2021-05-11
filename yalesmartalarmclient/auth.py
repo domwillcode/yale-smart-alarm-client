@@ -84,7 +84,7 @@ class YaleAuth:
             if len(url) > 0:
                 _LOGGER.debug("Yale URL updated: " + url)
                 if url.endswith('/'):
-                    url = url[:-1]
+                    url = url[:-6]
                 self._HOST = url
             else:
                 _LOGGER.debug("Services URL is empty")
