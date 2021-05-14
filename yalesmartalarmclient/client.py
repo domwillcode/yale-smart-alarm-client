@@ -76,6 +76,10 @@ class YaleSmartAlarmClient:
         return locks
     # end keep for backwards.
 
+    def get_all_devices(self):
+        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        return devices
+
     def get_doors_status(self):
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         doors = {}
@@ -91,6 +95,10 @@ class YaleSmartAlarmClient:
                     state = YALE_DOOR_CONTACT_STATE_UNKNOWN
                 doors[name] = state
         return doors
+
+    def get_mode(self):
+        mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
+        return mode
 
     def get_armed_status(self):
         alarm_state = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
