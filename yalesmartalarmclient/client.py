@@ -51,7 +51,43 @@ class YaleSmartAlarmClient:
         self.area_id = area_id
         self.lock_api: YaleDoorManAPI = YaleDoorManAPI(auth=self.auth)
 
-    # Kept for backwards compatibility.
+    # Included to get full visibility from API for local testing, use with print()
+    def get_all(self):
+        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
+        status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+        cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
+        online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+        history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
+
+        return "DEVICES \n" + str(devices) + "\n MODE \n" + str(mode) + "\n STATUS \n" + str(status) + "\n CYCLE \n" + str(cycle) + "\n ONLINE \n" + str(online) + "\n HISTORY \n" + str(history)
+
+    def get_all_devices(self):
+        """Return full json for all devices"""
+        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        return devices
+
+    def get_cycle(self):
+        """Return full cycle."""
+        cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
+        return cycle
+
+    def get_status(self):
+        """Return status from system."""
+        status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+        acfail = status['data']['acfail']
+        battery = status['data']['battery']
+        tamper = status['data']['tamper']
+        jam = status['data']['jam']
+        if acfail == battery == tamper == jam == "main.normal":
+            return "ok"
+        return "error"
+
+    def get_online(self):
+        """Return available from system."""
+        online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+        return online['data']
+
     def get_locks_status(self):
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         locks = {}
@@ -78,21 +114,6 @@ class YaleSmartAlarmClient:
                     state = YALE_LOCK_STATE_UNKNOWN
                 locks[name] = state
         return locks
-    # end keep for backwards.
-
-    def get_all(self):
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
-        status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
-        cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
-        online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
-        history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
-
-        return "DEVICES \n" + str(devices) + "\n MODE \n" + str(mode) + "\n STATUS \n" + str(status) + "\n CYCLE \n" + str(cycle) + "\n ONLINE \n" + str(online) + "\n HISTORY \n" + str(history)
-
-    def get_all_devices(self):
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        return devices
 
     def get_doors_status(self):
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
@@ -109,10 +130,6 @@ class YaleSmartAlarmClient:
                     state = YALE_DOOR_CONTACT_STATE_UNKNOWN
                 doors[name] = state
         return doors
-
-    def get_mode(self):
-        mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
-        return mode
 
     def get_armed_status(self):
         alarm_state = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
