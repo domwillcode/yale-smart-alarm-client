@@ -36,6 +36,10 @@ class YaleSmartAlarmClient:
     _ENDPOINT_SET_MODE = "/yapi/api/panel/mode/"
     _ENDPOINT_DEVICES_STATUS = "/yapi/api/panel/device_status/"
     _ENDPOINT_PANIC_BUTTON = "/api/panel/panic"
+    _ENDPOINT_STATUS = "/yapi/api/panel/status/"
+    _ENDPOINT_CYCLE = "/yapi/api/panel/cycle/"
+    _ENDPOINT_ONLINE = "/yapi/api/panel/online/"
+    _ENDPOINT_HISTORY = "/yapi/api/event/report/?page_num=1&set_utc=1"
 
     _REQUEST_PARAM_AREA = "area"
     _REQUEST_PARAM_MODE = "mode"
