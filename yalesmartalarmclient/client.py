@@ -76,6 +76,16 @@ class YaleSmartAlarmClient:
         return locks
     # end keep for backwards.
 
+    def get_all(self):
+        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
+        status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+        cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
+        online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+        history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
+
+        return "DEVICES \n" + str(devices) + "\n MODE \n" + str(mode) + "\n STATUS \n" + str(status) + "\n CYCLE \n" + str(cycle) + "\n ONLINE \n" + str(online) + "\n HISTORY \n" + str(history)
+
     def get_all_devices(self):
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         return devices
