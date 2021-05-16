@@ -123,7 +123,7 @@ class YaleAuth:
                 # Maybe refresh_token has expired, try again with password
                 self.refresh_token = None
                 return self._authorize()
-            _LOGGER.debug(f"Failed to authenticate with Yale Smart Alarm. Error: {data.error_description}", )
+            _LOGGER.debug("Failed to authenticate with Yale Smart Alarm. Error: %s", data.error)
             raise AuthenticationError("Failed to authenticate with Yale Smart Alarm. Check credentials.")
 
         _LOGGER.info("Authorization to Yale Alarm API successful.")

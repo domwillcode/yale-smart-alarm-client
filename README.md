@@ -26,7 +26,7 @@ where username and password are your Yale Smart Alarm credentials.
 #### Locks
 Iterate the connected locks
 ```pyhon
-client = YaleClient(username, password)
+client = YaleSmartAlarmClient(username, password)
 for lock in client.lock_api.locks():
     print(lock)
 ```
@@ -56,7 +56,7 @@ client.arm_full()
 client.arm_partial()
 client.disarm()
 ```
-or 
+or
 ```
 client.set_alarm_state(<mode>)
 ```
