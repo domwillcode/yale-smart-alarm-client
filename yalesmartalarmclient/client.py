@@ -88,6 +88,11 @@ class YaleSmartAlarmClient:
         online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
         return online['data']
 
+    def get_history(self):
+        """Return the log from the system."""
+        history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
+        return history
+
     def get_locks_status(self):
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         locks = {}
