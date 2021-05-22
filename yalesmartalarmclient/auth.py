@@ -27,6 +27,7 @@ class YaleAuth:
 
     _DEFAULT_REQUEST_TIMEOUT = 5
     _MAX_RETRY_SECONDS = 60
+    _MAX_TRIES = 5
 
     def __init__(self, username: str, password: str):
         self.username = username
@@ -40,10 +41,15 @@ class YaleAuth:
             "Authorization": "Bearer " + self.access_token
         }
 
+    def give_up(error):
+        """Give up on connecting."""
+        raise AuthenticationError
+
     @backoff.on_exception(backoff.expo,
                           requests.exceptions.RequestException,
-                          max_tries=8,
-                          max_time=_MAX_RETRY_SECONDS)
+                          max_tries=_MAX_TRIES,
+                          max_time=_MAX_RETRY_SECONDS,
+                          giveup = give_up)
     def get_authenticated(self, endpoint: str):
         """
         Execute an GET request on an endpoint.
@@ -65,8 +71,9 @@ class YaleAuth:
 
     @backoff.on_exception(backoff.expo,
                           requests.exceptions.RequestException,
-                          max_tries=8,
-                          max_time=_MAX_RETRY_SECONDS)
+                          max_tries=_MAX_TRIES,
+                          max_time=_MAX_RETRY_SECONDS,
+                          giveup = give_up)
     def post_authenticated(self, endpoint: str, params: dict = None):
         if 'panic' in endpoint:
             url = self._HOST[: -6] + endpoint
