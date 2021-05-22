@@ -33,6 +33,14 @@ class YaleAuth:
     _MAX_RETRY_SECONDS = 30
     _MAX_TRIES = 5
 
+    BACKOFF_RETRY_ON_EXCEPTION_PARAMS = {
+        "wait_gen": backoff.expo,
+        "exception": requests.exceptions.RequestException,
+        "max_tries": _MAX_TRIES,
+        "max_time": _MAX_RETRY_SECONDS,
+        "giveup": give_up,
+    }
+
     def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
@@ -45,17 +53,11 @@ class YaleAuth:
             "Authorization": "Bearer " + self.access_token
         }
 
-    def give_up(error):
+    def give_up(e):
         """Give up on connecting."""
-        #raise AuthenticationError
-        print("Not ok")
+        return 400 <= e.response.status_code < 500
 
-    @backoff.on_exception(backoff.expo,
-                          requests.exceptions.RequestException,
-                          max_tries=_MAX_TRIES,
-                          max_time=_MAX_RETRY_SECONDS,
-                          on_giveup = give_up,
-                          on_backoff = give_up)
+    @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def get_authenticated(self, endpoint: str):
         """
         Execute an GET request on an endpoint.
@@ -71,16 +73,11 @@ class YaleAuth:
         if response.status_code != 200:
             self._authorize()
             response = requests.get(url, headers=self.auth_headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-            return response.raise_for_status()
+            response.raise_for_status()
 
         return response.json()
 
-    @backoff.on_exception(backoff.expo,
-                          requests.exceptions.RequestException,
-                          max_tries=_MAX_TRIES,
-                          max_time=_MAX_RETRY_SECONDS,
-                          on_giveup = give_up,
-                          on_backoff = give_up)
+    @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def post_authenticated(self, endpoint: str, params: dict = None):
         if 'panic' in endpoint:
             url = self._HOST[: -6] + endpoint
@@ -90,7 +87,7 @@ class YaleAuth:
         if response.status_code != 200:
             self._authorize()
             response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-            return response.raise_for_status()
+            response.raise_for_status()
 
         return response.json()
 
@@ -108,12 +105,7 @@ class YaleAuth:
         else:
             _LOGGER.debug("Unable to fetch services")
 
-    @backoff.on_exception(backoff.expo,
-                          requests.exceptions.RequestException,
-                          max_tries=_MAX_TRIES,
-                          max_time=_MAX_RETRY_SECONDS,
-                          on_giveup = give_up,
-                          on_backoff = give_up)
+    @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def _authorize(self):
         if self.refresh_token:
             payload = {
