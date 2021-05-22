@@ -10,6 +10,10 @@ class AuthenticationError(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
+class ConnectionError(Exception):
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
+
 
 class YaleAuth:
     """
@@ -67,7 +71,7 @@ class YaleAuth:
         if response.status_code != 200:
             self._authorize()
             response = requests.get(url, headers=self.auth_headers, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-            response.raise_for_status()
+            return response.raise_for_status()
 
         return response.json()
 
@@ -86,7 +90,7 @@ class YaleAuth:
         if response.status_code != 200:
             self._authorize()
             response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
-            response.raise_for_status()
+            return response.raise_for_status()
 
         return response.json()
 
@@ -106,8 +110,10 @@ class YaleAuth:
 
     @backoff.on_exception(backoff.expo,
                           requests.exceptions.RequestException,
-                          max_tries=8,
-                          max_time=_MAX_RETRY_SECONDS)
+                          max_tries=_MAX_TRIES,
+                          max_time=_MAX_RETRY_SECONDS,
+                          on_giveup = give_up,
+                          on_backoff = give_up)
     def _authorize(self):
         if self.refresh_token:
             payload = {
