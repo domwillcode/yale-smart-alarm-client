@@ -43,7 +43,8 @@ class YaleAuth:
 
     def give_up(error):
         """Give up on connecting."""
-        raise AuthenticationError
+        #raise AuthenticationError
+        print("Not ok")
 
     @backoff.on_exception(backoff.expo,
                           requests.exceptions.RequestException,
