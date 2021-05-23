@@ -2,17 +2,9 @@
 import logging
 import requests
 import backoff
+from .exceptions import AuthenticationError, ConnectionError
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class AuthenticationError(Exception):
-    def __init__(self, *args, **kwargs):
-        Exception.__init__(self, *args, **kwargs)
-
-class ConnectionError(Exception):
-    def __init__(self, *args, **kwargs):
-        Exception.__init__(self, *args, **kwargs)
 
 
 class YaleAuth:
@@ -33,6 +25,16 @@ class YaleAuth:
     _MAX_RETRY_SECONDS = 30
     _MAX_TRIES = 5
 
+    def give_up(e):
+        """Give up on connecting."""
+        try:
+            status = e.response.status_code
+            #if e.response.status_code == 401:
+            #    raise AuthenticationError
+        except:
+            return False
+        raise AuthenticationError
+
     BACKOFF_RETRY_ON_EXCEPTION_PARAMS = {
         "wait_gen": backoff.expo,
         "exception": requests.exceptions.RequestException,
@@ -45,17 +47,20 @@ class YaleAuth:
         self.username = username
         self.password = password
         self.refresh_token = None
-        self._authorize()
+        try:
+            self._authorize()
+        except AuthenticationError:
+            _LOGGER.error("Authentication incorrect")
+            raise AuthenticationError
+        except:
+            _LOGGER.error("Problem connecting to API")
+            raise ConnectionError
 
     @property
     def auth_headers(self):
         return {
             "Authorization": "Bearer " + self.access_token
         }
-
-    def give_up(e):
-        """Give up on connecting."""
-        return 400 <= e.response.status_code < 500
 
     @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def get_authenticated(self, endpoint: str):
