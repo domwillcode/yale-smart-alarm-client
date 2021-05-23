@@ -1,4 +1,10 @@
 # Yale Smart Alarm Client
+
+[![PyPI version](https://img.shields.io/pypi/v/yalesmartalarmclient.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/yalesmartalarmclient/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/yalesmartalarmclient.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/yalesmartalarmclient/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/yalesmartalarmclient.svg)](https://yalesmartalarmclient.org/packages/yalesmartalarmclient)
+[![GitHub](https://img.shields.io/github/license/hugovk/yalesmartalarmclient.svg)](LICENSE)
+
 Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API.
 
 Supported functions:
@@ -6,6 +12,7 @@ Supported functions:
 - Arm partial (away/night)
 - Disarm
 - Get alarm status
+- Door sensor status
 - Trigger alarm panic button
 
 ### Usage
@@ -16,10 +23,12 @@ client = YaleSmartAlarmClient(username, password)
 ```
 where username and password are your Yale Smart Alarm credentials.
 
+For full listing of function see functions.md
+
 #### Locks
 Iterate the connected locks
 ```pyhon
-client = YaleClient(username, password)
+client = YaleSmartAlarmClient(username, password)
 for lock in client.lock_api.locks():
     print(lock)
 ```
@@ -49,7 +58,7 @@ client.arm_full()
 client.arm_partial()
 client.disarm()
 ```
-or 
+or
 ```
 client.set_alarm_state(<mode>)
 ```

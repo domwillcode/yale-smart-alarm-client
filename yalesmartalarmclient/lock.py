@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
+from .exceptions import AuthenticationError, ConnectionError
 
 
 class YaleLockState(Enum):
@@ -12,9 +13,9 @@ class YaleLockState(Enum):
 class YaleLock:
     """
     This is an abstraction of a remove Yale lock.
-    The object created by this class attempts to reflect the remote state, and also has the possibilty of 
+    The object created by this class attempts to reflect the remote state, and also has the possibilty of
     locking/unlocking the lock state.
-    
+
     Objects of this class shall usually be craeted by the lock_api class.
     """
 
@@ -89,7 +90,12 @@ class YaleLock:
         Returns: True if the API returns success
 
         """
-        return self._lock_api.close_lock(lock=self)
+        try:
+            return self._lock_api.close_lock(lock=self)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
     def open(self, pin_code: str):
         """
@@ -97,7 +103,12 @@ class YaleLock:
 
         returns: True if the lock was opened.
         """
-        return self._lock_api.open_lock(lock=self, pin_code=pin_code)
+        try:
+            return self._lock_api.open_lock(lock=self, pin_code=pin_code)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
 
 class YaleDoorManAPI:
@@ -151,7 +162,12 @@ class YaleDoorManAPI:
             >>>     print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        try:
+            devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         for device in devices['data']:
             if device['type'] == YaleLock.DEVICE_TYPE:
                 lock = YaleLock(device, lock_api=self)
@@ -207,7 +223,12 @@ class YaleDoorManAPI:
             "device_type": lock.device_type(),
             "request_value": "1"
         }
-        operation_status = self.auth.post_authenticated(self._ENDPOINT_DEVICES_CONTROL, params=params)
+        try:
+            operation_status = self.auth.post_authenticated(self._ENDPOINT_DEVICES_CONTROL, params=params)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         success = operation_status['code'] == self.CODE_SUCCESS
         if success:
             lock.set_state(YaleLockState.LOCKED)
@@ -242,7 +263,12 @@ class YaleDoorManAPI:
             "zone": lock.zone(),
             "pincode": pin_code
         }
-        operation_status = self.auth.post_authenticated(self._ENDPOINT_DEVICES_UNLOCK, params=params)
+        try:
+            operation_status = self.auth.post_authenticated(self._ENDPOINT_DEVICES_UNLOCK, params=params)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         success = operation_status['code'] == self.CODE_SUCCESS
         if success:
             lock.set_state(YaleLockState.UNLOCKED)
