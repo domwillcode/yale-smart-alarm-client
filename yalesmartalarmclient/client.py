@@ -7,6 +7,7 @@ See https://github.com/domwillcode/yale-smart-alarm-client for more information.
 import logging
 from .auth import YaleAuth
 from .lock import YaleDoorManAPI
+from .exceptions import AuthenticationError, ConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,23 +24,19 @@ YALE_DOOR_CONTACT_STATE_CLOSED = "closed"
 YALE_DOOR_CONTACT_STATE_OPEN = "open"
 YALE_DOOR_CONTACT_STATE_UNKNOWN = "unknown"
 
-
-class AuthenticationError(Exception):
-    def __init__(self, *args, **kwargs):
-        Exception.__init__(self, *args, **kwargs)
-
-
 class YaleSmartAlarmClient:
     YALE_CODE_RESULT_SUCCESS = '000'
 
-    _ENDPOINT_GET_MODE = "/yapi/api/panel/mode/"
-    _ENDPOINT_SET_MODE = "/yapi/api/panel/mode/"
-    _ENDPOINT_DEVICES_STATUS = "/yapi/api/panel/device_status/"
+    _ENDPOINT_GET_MODE = "/api/panel/mode/"
+    _ENDPOINT_SET_MODE = "/api/panel/mode/"
+    _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
     _ENDPOINT_PANIC_BUTTON = "/api/panel/panic"
     _ENDPOINT_STATUS = "/yapi/api/panel/status/"
     _ENDPOINT_CYCLE = "/yapi/api/panel/cycle/"
     _ENDPOINT_ONLINE = "/yapi/api/panel/online/"
     _ENDPOINT_HISTORY = "/yapi/api/event/report/?page_num=1&set_utc=1"
+    _ENDPOINT_CHECK = "/yapi/api/auth/check/"
+    _ENDPOINT_PANEL_INFO = "/yapi/api/panel/info/"
 
     _REQUEST_PARAM_AREA = "area"
     _REQUEST_PARAM_MODE = "mode"
@@ -51,30 +48,56 @@ class YaleSmartAlarmClient:
         self.area_id = area_id
         self.lock_api: YaleDoorManAPI = YaleDoorManAPI(auth=self.auth)
 
-    # Included to get full visibility from API for local testing, use with print()
     def get_all(self):
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
-        status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
-        cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
-        online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
-        history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
+        """DEBUG function to get full visibility from API for local testing, use with print()."""
+        try:
+            devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+            mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
+            status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+            cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
+            online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+            history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
+            panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
+            auth_check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
-        return "DEVICES \n" + str(devices) + "\n MODE \n" + str(mode) + "\n STATUS \n" + str(status) + "\n CYCLE \n" + str(cycle) + "\n ONLINE \n" + str(online) + "\n HISTORY \n" + str(history)
+        return (
+            " DEVICES \n" + str(devices['data']) + "\n MODE \n" + str(mode['data']) + "\n STATUS \n" + str(status['data']) +
+            "\n CYCLE \n" + str(cycle['data']) + "\n ONLINE \n" + str(online['data']) + "\n HISTORY \n" + str(history['data']) +
+            "\n PANEL INFO \n" + str(panel_info['data']) + "\n AUTH CHECK \n" + str(auth_check['data'])
+        )
 
     def get_all_devices(self):
         """Return full json for all devices"""
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        return devices
+        try:
+            devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
+        return devices['data']
 
     def get_cycle(self):
         """Return full cycle."""
-        cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
-        return cycle
+        try:
+            cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
+        return cycle['data']
 
     def get_status(self):
         """Return status from system."""
-        status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+        try:
+            status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         acfail = status['data']['acfail']
         battery = status['data']['battery']
         tamper = status['data']['tamper']
@@ -85,16 +108,52 @@ class YaleSmartAlarmClient:
 
     def get_online(self):
         """Return available from system."""
-        online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+        try:
+            online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         return online['data']
+
+    def get_panel_info(self):
+        """Return panel information."""
+        try:
+            panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
+        return panel_info['data']
 
     def get_history(self):
         """Return the log from the system."""
-        history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
-        return history
+        try:
+            history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
+        return history['data']
+
+    def get_auth_check(self):
+        """Return the authorization check."""
+        try:
+            check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
+        return check['data']
 
     def get_locks_status(self):
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        """Return all locks status from the system."""
+        try:
+            devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         locks = {}
         for device in devices['data']:
             if device['type'] == "device_type.door_lock":
@@ -121,7 +180,13 @@ class YaleSmartAlarmClient:
         return locks
 
     def get_doors_status(self):
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        """Return all door contacts status from the system."""
+        try:
+            devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         doors = {}
         for device in devices['data']:
             if device['type'] == "device_type.door_contact":
@@ -137,7 +202,13 @@ class YaleSmartAlarmClient:
         return doors
 
     def get_armed_status(self):
-        alarm_state = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
+        """ Get armed status."""
+        try:
+            alarm_state = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
         return alarm_state.get('data')[0].get('mode')
 
     def set_armed_status(self, mode):
@@ -146,23 +217,57 @@ class YaleSmartAlarmClient:
             self._REQUEST_PARAM_MODE: mode
         }
 
-        return self.auth.post_authenticated(self._ENDPOINT_SET_MODE, params=params)
+        try:
+            return self.auth.post_authenticated(self._ENDPOINT_SET_MODE, params=params)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
     def trigger_panic_button(self):
-        self.auth.post_authenticated(self._ENDPOINT_PANIC_BUTTON)
+        """Trigger the alarm via the panic function."""
+        try:
+            self.auth.post_authenticated(self._ENDPOINT_PANIC_BUTTON)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
     def arm_full(self):
-        self.set_armed_status(YALE_STATE_ARM_FULL)
+        """Arm away."""
+        try:
+            self.set_armed_status(YALE_STATE_ARM_FULL)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
     def arm_partial(self):
-        self.set_armed_status(YALE_STATE_ARM_PARTIAL)
+        """Arm home."""
+        try:
+            self.set_armed_status(YALE_STATE_ARM_PARTIAL)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
     def disarm(self):
-        self.set_armed_status(YALE_STATE_DISARM)
+        """Disarm alarm."""
+        try:
+            self.set_armed_status(YALE_STATE_DISARM)
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
     def is_armed(self):
         """Return True or False if the system is armed in any way"""
-        alarm_code = self.get_armed_status()
+        try:
+            alarm_code = self.get_armed_status()
+        except AuthenticationError:
+            raise AuthenticationError
+        except:
+            raise ConnectionError
 
         if alarm_code == YALE_STATE_ARM_FULL:
             return True

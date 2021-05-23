@@ -23,6 +23,8 @@ client = YaleSmartAlarmClient(username, password)
 ```
 where username and password are your Yale Smart Alarm credentials.
 
+For full listing of function see functions.md
+
 #### Locks
 Iterate the connected locks
 ```pyhon
