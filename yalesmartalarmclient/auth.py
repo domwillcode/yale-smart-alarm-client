@@ -94,7 +94,10 @@ class YaleAuth:
             response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
             response.raise_for_status()
 
-        return response.json()
+        if 'panic' in endpoint:
+            return True
+        else:
+            return response.json()
 
     def _update_services(self):
         data = self.get_authenticated(self._ENDPOINT_SERVICES)
