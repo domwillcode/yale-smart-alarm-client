@@ -85,7 +85,7 @@ class YaleAuth:
     @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def post_authenticated(self, endpoint: str, params: dict = None):
         if 'panic' in endpoint:
-            url = self._HOST[: -6] + endpoint
+            url = self._HOST[: -5] + endpoint
         else:
             url = self._HOST + endpoint
         response = requests.post(url, headers=self.auth_headers, data=params, timeout=self._DEFAULT_REQUEST_TIMEOUT)
