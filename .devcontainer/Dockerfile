@@ -27,3 +27,6 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:0-${VARIANT}
 #    && rm -rf /var/lib/apt/lists/*
 # ENV DEBIAN_FRONTEND=dialog
 
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install --upgrade build && \
+    python3 -m pip install --user --upgrade twine
