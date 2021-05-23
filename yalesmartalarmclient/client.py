@@ -43,8 +43,6 @@ class YaleSmartAlarmClient:
 
     _DEFAULT_REQUEST_TIMEOUT = 5
 
-    _VERSION = "0.3.4"
-
     def __init__(self, username, password, area_id=1):
         self.auth: YaleAuth = YaleAuth(username=username, password=password)
         self.area_id = area_id
