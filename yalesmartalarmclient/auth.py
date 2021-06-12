@@ -34,7 +34,7 @@ class YaleAuth:
             status = e.response.status_code
             # if e.response.status_code == 401:
             #    raise AuthenticationError
-        except:
+        except requests.RequestException:
             return False
         raise AuthenticationError
 
@@ -53,12 +53,12 @@ class YaleAuth:
         self.refresh_token: Optional[str] = None
         try:
             self._authorize()
-        except AuthenticationError:
+        except AuthenticationError as e:
             _LOGGER.error("Authentication incorrect")
-            raise AuthenticationError
-        except:
+            raise e
+        except requests.RequestException as e:
             _LOGGER.error("Problem connecting to API")
-            raise ConnectionError
+            raise e
 
     @property
     def auth_headers(self) -> Dict[str, str]:
@@ -184,7 +184,7 @@ class YaleAuth:
         self.refresh_token = data.get(self._YALE_AUTHENTICATION_REFRESH_TOKEN)
         self.access_token: str = data.get(self._YALE_AUTHENTICATION_ACCESS_TOKEN)
         if self.refresh_token is None or self.access_token is None:
-            raise Exception(
+            raise AuthenticationError(
                 "Failed to authenticate with Yale Smart Alarm. Invalid token."
             )
 

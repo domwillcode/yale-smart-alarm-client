@@ -3,7 +3,9 @@
 See https://github.com/domwillcode/yale-smart-alarm-client for more information.
 """
 import logging
-from typing import Any, Dict, Literal, cast
+from typing import Any, Dict, cast
+
+from requests import RequestException
 
 from .auth import YaleAuth
 from .exceptions import AuthenticationError
@@ -63,10 +65,10 @@ class YaleSmartAlarmClient:
             history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
             panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
             auth_check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
 
         return (
             " DEVICES \n"
@@ -91,30 +93,30 @@ class YaleSmartAlarmClient:
         """Return full json for all devices."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         return cast(Dict[str, Any], devices["data"])
 
     def get_cycle(self) -> Dict[str, Any]:
         """Return full cycle."""
         try:
             cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         return cast(Dict[str, Any], cycle["data"])
 
     def get_status(self) -> str:
         """Return status from system."""
         try:
             status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         acfail = status["data"]["acfail"]
         battery = status["data"]["battery"]
         tamper = status["data"]["tamper"]
@@ -127,50 +129,50 @@ class YaleSmartAlarmClient:
         """Return available from system."""
         try:
             online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         return cast(Dict[str, Any], online["data"])
 
     def get_panel_info(self) -> Dict[str, Any]:
         """Return panel information."""
         try:
             panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         return cast(Dict[str, Any], panel_info["data"])
 
     def get_history(self) -> Dict[str, Any]:
         """Return the log from the system."""
         try:
             history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         return cast(Dict[str, Any], history["data"])
 
     def get_auth_check(self) -> Dict[str, Any]:
         """Return the authorization check."""
         try:
             check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         return cast(Dict[str, Any], check["data"])
 
     def get_locks_status(self) -> Dict[str, str]:
         """Return all locks status from the system."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         locks: Dict[str, str] = {}
         for device in devices["data"]:
             if device["type"] == "device_type.door_lock":
@@ -200,10 +202,10 @@ class YaleSmartAlarmClient:
         """Return all door contacts status from the system."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         doors: Dict[str, str] = {}
         for device in devices["data"]:
             if device["type"] == "device_type.door_contact":
@@ -222,10 +224,10 @@ class YaleSmartAlarmClient:
         """Get armed status."""
         try:
             alarm_state = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
         return cast(str, alarm_state.get("data")[0].get("mode"))
 
     def set_armed_status(self, mode: str) -> Dict[str, Any]:
@@ -246,55 +248,55 @@ class YaleSmartAlarmClient:
                 Dict[str, Any],
                 self.auth.post_authenticated(self._ENDPOINT_SET_MODE, params=params),
             )
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
 
     def trigger_panic_button(self) -> None:
         """Trigger the alarm via the panic function."""
         try:
             self.auth.post_authenticated(self._ENDPOINT_PANIC_BUTTON)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
 
     def arm_full(self) -> None:
         """Arm away."""
         try:
             self.set_armed_status(YALE_STATE_ARM_FULL)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
 
     def arm_partial(self) -> None:
         """Arm home."""
         try:
             self.set_armed_status(YALE_STATE_ARM_PARTIAL)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
 
     def disarm(self) -> None:
         """Disarm alarm."""
         try:
             self.set_armed_status(YALE_STATE_DISARM)
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
 
     def is_armed(self) -> bool:
         """Return True or False if the system is armed in any way."""
         try:
             alarm_code = self.get_armed_status()
-        except AuthenticationError:
-            raise AuthenticationError
-        except:
-            raise ConnectionError
+        except AuthenticationError as e:
+            raise e
+        except RequestException as e:
+            raise e
 
         if alarm_code == YALE_STATE_ARM_FULL:
             return True
