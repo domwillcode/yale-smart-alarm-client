@@ -4,7 +4,6 @@ from enum import Enum
 from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING, cast
 
 from .exceptions import AuthenticationError
-from .exceptions import ConnectionError
 
 if TYPE_CHECKING:
     from .auth import YaleAuth

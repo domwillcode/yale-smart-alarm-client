@@ -6,7 +6,6 @@ import backoff
 import requests
 
 from .exceptions import AuthenticationError
-from .exceptions import ConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 

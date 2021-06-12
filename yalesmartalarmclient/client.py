@@ -7,7 +7,6 @@ from typing import Any, Dict, Literal, cast
 
 from .auth import YaleAuth
 from .exceptions import AuthenticationError
-from .exceptions import ConnectionError
 from .lock import YaleDoorManAPI
 
 _LOGGER = logging.getLogger(__name__)
