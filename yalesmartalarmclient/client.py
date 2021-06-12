@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API.
 
 See https://github.com/domwillcode/yale-smart-alarm-client for more information.
@@ -28,6 +27,8 @@ YALE_DOOR_CONTACT_STATE_UNKNOWN = "unknown"
 
 
 class YaleSmartAlarmClient:
+    """Module for handling connection with the Yale Smart API."""
+
     YALE_CODE_RESULT_SUCCESS = "000"
 
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
@@ -47,6 +48,7 @@ class YaleSmartAlarmClient:
     _DEFAULT_REQUEST_TIMEOUT = 5
 
     def __init__(self, username: str, password: str, area_id: int = 1) -> None:
+        """Initialize module."""
         self.auth: YaleAuth = YaleAuth(username=username, password=password)
         self.area_id = area_id
         self.lock_api: YaleDoorManAPI = YaleDoorManAPI(auth=self.auth)
@@ -87,7 +89,7 @@ class YaleSmartAlarmClient:
         )
 
     def get_all_devices(self) -> Dict[str, Any]:
-        """Return full json for all devices"""
+        """Return full json for all devices."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         except AuthenticationError:
@@ -218,7 +220,7 @@ class YaleSmartAlarmClient:
         return doors
 
     def get_armed_status(self) -> str:
-        """ Get armed status."""
+        """Get armed status."""
         try:
             alarm_state = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
         except AuthenticationError:
@@ -228,6 +230,13 @@ class YaleSmartAlarmClient:
         return cast(str, alarm_state.get("data")[0].get("mode"))
 
     def set_armed_status(self, mode: str) -> Dict[str, Any]:
+        """Set armed status.
+
+        Arguments:
+            mode: Alarm arm state. One of `YALE_STATE_ARM_FULL`, `YALE_STATE_ARM_PARTIAL`, or `YALE_STATE_DISARM`.
+        Returns:
+            Api response from the arm request.
+        """
         params = {
             self._REQUEST_PARAM_AREA: self.area_id,
             self._REQUEST_PARAM_MODE: mode,
@@ -280,7 +289,7 @@ class YaleSmartAlarmClient:
             raise ConnectionError
 
     def is_armed(self) -> bool:
-        """Return True or False if the system is armed in any way"""
+        """Return True or False if the system is armed in any way."""
         try:
             alarm_code = self.get_armed_status()
         except AuthenticationError:

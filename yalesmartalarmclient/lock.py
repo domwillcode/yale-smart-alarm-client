@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+"""Module for interacting with a Yale Doorman lock."""
 from enum import Enum
-from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING, Union, cast
+from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING, cast
 
 from .exceptions import AuthenticationError
 from .exceptions import ConnectionError
@@ -10,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class YaleLockState(Enum):
+    """Lock state enum."""
+
     LOCKED = 1
     UNLOCKED = 2
     DOOR_OPEN = 3
@@ -17,8 +20,8 @@ class YaleLockState(Enum):
 
 
 class YaleLock:
-    """
-    This is an abstraction of a remove Yale lock.
+    """This is an abstraction of a remove Yale lock.
+
     The object created by this class attempts to reflect the remote state, and also has the possibilty of
     locking/unlocking the lock state.
 
@@ -28,6 +31,7 @@ class YaleLock:
     DEVICE_TYPE: str = "device_type.door_lock"
 
     def __init__(self, device: Dict[str, Any], lock_api: "YaleDoorManAPI") -> None:
+        """Initialize a Yale lock device."""
         self._lock_api = lock_api
         self._device: Dict[str, Any] = device
         self.name: str = device["name"]
@@ -35,6 +39,7 @@ class YaleLock:
         self.update(device)
 
     def __eq__(self, other: object) -> bool:
+        """Compare two lock objects."""
         if isinstance(other, self.__class__):
             return self.name == other.name
         elif isinstance(other, str):
@@ -43,29 +48,37 @@ class YaleLock:
             return False
 
     def __str__(self) -> str:
+        """Return string representation of a lock."""
         return f"{self.name} [{self.state()}]"
 
     def update(self, device: Dict[str, Any]) -> None:
+        """Update the device."""
         self._device = device
         self.name = device["name"]
         self._state = self._calc_state()
 
     def state(self) -> YaleLockState:
+        """Return the lock state of the lock."""
         return self._state
 
     def area(self) -> str:
+        """Return the lock area."""
         return cast(str, self._device["area"])
 
     def sid(self) -> str:
+        """Return the lock ID."""
         return cast(str, self._device["address"])
 
     def device_type(self) -> str:
+        """Return the lock device type."""
         return cast(str, self._device["type"])
 
     def zone(self) -> str:
+        """Return the lock zone."""
         return cast(str, self._device["no"])
 
     def set_state(self, new_state: YaleLockState) -> None:
+        """Update the device state with new_state."""
         self._state = new_state
 
     def _calc_state(self) -> YaleLockState:
@@ -93,10 +106,9 @@ class YaleLock:
         return state
 
     def close(self) -> bool:
-        """
-        Attempt to close the remote lock.
-        Returns: True if the API returns success
+        """Attempt to close the remote lock.
 
+        Returns: True if the API returns success.
         """
         try:
             return self._lock_api.close_lock(lock=self)
@@ -106,8 +118,7 @@ class YaleLock:
             raise ConnectionError
 
     def open(self, pin_code: str) -> bool:
-        """
-        Attempts to open the lock.
+        """Attempt to open the lock.
 
         returns: True if the lock was opened.
         """
@@ -120,8 +131,7 @@ class YaleLock:
 
 
 class YaleDoorManAPI:
-    """
-    Represents the yale doorman api.
+    """Represents the yale doorman api.
 
     Example: iterating
         >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
@@ -157,11 +167,12 @@ class YaleDoorManAPI:
     _ENDPOINT_DEVICES_UNLOCK = "/api/minigw/unlock/"
 
     def __init__(self, auth: "YaleAuth") -> None:
+        """Initialize the module."""
         self.auth = auth
 
     def locks(self) -> Iterator[YaleLock]:
-        """
-        Iterate through the locks we have available for this user.
+        """Iterate through the locks we have available for this user.
+
         Yields: the locks
 
         Example:
@@ -183,8 +194,7 @@ class YaleDoorManAPI:
                 yield lock
 
     def get(self, name: str) -> Optional[YaleLock]:
-        """
-        Get a single lock with matching name.
+        """Get a single lock with matching name.
 
         Args:
             name: The lock name
@@ -206,8 +216,9 @@ class YaleDoorManAPI:
         return None
 
     def close_lock(self, lock: YaleLock) -> bool:
-        """
-        Close the specified lock.  If the operation is successful the lock state will be updated to reflect this.
+        """Close the specified lock.
+
+        If the operation is successful the lock state will be updated to reflect this.
 
         Notes:
             the lock object has methods to do this, see YaleLock:close()
@@ -246,8 +257,8 @@ class YaleDoorManAPI:
         return success
 
     def open_lock(self, lock: YaleLock, pin_code: str) -> bool:
-        """
-        Opens the specified lock.
+        """Open the specified lock.
+
         If the operation is a success the local state of lock will be updated to reflect this.
 
         Notes:

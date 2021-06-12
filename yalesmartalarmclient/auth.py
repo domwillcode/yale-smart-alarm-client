@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+"""Module for handling authentication against the Yale Smart API."""
 import logging
 from typing import Any, Dict, Literal, Optional, Tuple, Union, cast
 
@@ -12,9 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class YaleAuth:
-    """
-    Handle authentication and creating authorized calls on the yale apis.
-    """
+    """Handle authentication and creating authorized calls on the yale apis."""
 
     YALE_CODE_RESULT_SUCCESS = "000"
 
@@ -50,6 +48,7 @@ class YaleAuth:
     }
 
     def __init__(self, username: str, password: str) -> None:
+        """Initialize Authentication module."""
         self.username = username
         self.password = password
         self.refresh_token: Optional[str] = None
@@ -64,14 +63,15 @@ class YaleAuth:
 
     @property
     def auth_headers(self) -> Dict[str, str]:
+        """Return authentication headers."""
         return {"Authorization": "Bearer " + self.access_token}
 
     @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def get_authenticated(self, endpoint: str) -> Dict[str, Any]:
-        """
-        Execute an GET request on an endpoint.
+        """Execute an GET request on an endpoint.
+
         Args:
-            endpoint: parts of an url
+            endpoint: parts of an url.
 
         Returns:
             a dictionary with the response.
@@ -94,6 +94,15 @@ class YaleAuth:
     def post_authenticated(
         self, endpoint: str, params: Optional[Dict[Any, Any]] = None
     ) -> Union[Literal[True], Dict[str, Any]]:
+        """Execute a POST request on an endpoint.
+
+        Args:
+            endpoint: URL endpoint to connect to.
+
+        Returns:
+            A dictionary with the response.
+
+        """
         if "panic" in endpoint:
             url = self._HOST[:-5] + endpoint
         else:
