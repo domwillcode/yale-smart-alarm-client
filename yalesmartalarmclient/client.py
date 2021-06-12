@@ -3,11 +3,12 @@
 
 See https://github.com/domwillcode/yale-smart-alarm-client for more information.
 """
-
 import logging
+
 from .auth import YaleAuth
+from .exceptions import AuthenticationError
+from .exceptions import ConnectionError
 from .lock import YaleDoorManAPI
-from .exceptions import AuthenticationError, ConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,8 +25,9 @@ YALE_DOOR_CONTACT_STATE_CLOSED = "closed"
 YALE_DOOR_CONTACT_STATE_OPEN = "open"
 YALE_DOOR_CONTACT_STATE_UNKNOWN = "unknown"
 
+
 class YaleSmartAlarmClient:
-    YALE_CODE_RESULT_SUCCESS = '000'
+    YALE_CODE_RESULT_SUCCESS = "000"
 
     _ENDPOINT_GET_MODE = "/api/panel/mode/"
     _ENDPOINT_SET_MODE = "/api/panel/mode/"
@@ -65,9 +67,22 @@ class YaleSmartAlarmClient:
             raise ConnectionError
 
         return (
-            " DEVICES \n" + str(devices['data']) + "\n MODE \n" + str(mode['data']) + "\n STATUS \n" + str(status['data']) +
-            "\n CYCLE \n" + str(cycle['data']) + "\n ONLINE \n" + str(online['data']) + "\n HISTORY \n" + str(history['data']) +
-            "\n PANEL INFO \n" + str(panel_info['data']) + "\n AUTH CHECK \n" + str(auth_check['data'])
+            " DEVICES \n"
+            + str(devices["data"])
+            + "\n MODE \n"
+            + str(mode["data"])
+            + "\n STATUS \n"
+            + str(status["data"])
+            + "\n CYCLE \n"
+            + str(cycle["data"])
+            + "\n ONLINE \n"
+            + str(online["data"])
+            + "\n HISTORY \n"
+            + str(history["data"])
+            + "\n PANEL INFO \n"
+            + str(panel_info["data"])
+            + "\n AUTH CHECK \n"
+            + str(auth_check["data"])
         )
 
     def get_all_devices(self):
@@ -78,7 +93,7 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        return devices['data']
+        return devices["data"]
 
     def get_cycle(self):
         """Return full cycle."""
@@ -88,7 +103,7 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        return cycle['data']
+        return cycle["data"]
 
     def get_status(self):
         """Return status from system."""
@@ -98,10 +113,10 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        acfail = status['data']['acfail']
-        battery = status['data']['battery']
-        tamper = status['data']['tamper']
-        jam = status['data']['jam']
+        acfail = status["data"]["acfail"]
+        battery = status["data"]["battery"]
+        tamper = status["data"]["tamper"]
+        jam = status["data"]["jam"]
         if acfail == battery == tamper == jam == "main.normal":
             return "ok"
         return "error"
@@ -114,7 +129,7 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        return online['data']
+        return online["data"]
 
     def get_panel_info(self):
         """Return panel information."""
@@ -124,7 +139,7 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        return panel_info['data']
+        return panel_info["data"]
 
     def get_history(self):
         """Return the log from the system."""
@@ -134,7 +149,7 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        return history['data']
+        return history["data"]
 
     def get_auth_check(self):
         """Return the authorization check."""
@@ -144,7 +159,7 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        return check['data']
+        return check["data"]
 
     def get_locks_status(self):
         """Return all locks status from the system."""
@@ -155,15 +170,15 @@ class YaleSmartAlarmClient:
         except:
             raise ConnectionError
         locks = {}
-        for device in devices['data']:
-            if device['type'] == "device_type.door_lock":
-                state = device['status1']
-                name = device['name']
-                lock_status_str = device['minigw_lock_status']
-                if lock_status_str != '':
+        for device in devices["data"]:
+            if device["type"] == "device_type.door_lock":
+                state = device["status1"]
+                name = device["name"]
+                lock_status_str = device["minigw_lock_status"]
+                if lock_status_str != "":
                     lock_status = int(lock_status_str, 16)
-                    closed = ((lock_status & 16) == 16)
-                    locked = ((lock_status & 1) == 1)
+                    closed = (lock_status & 16) == 16
+                    locked = (lock_status & 1) == 1
                     if closed is True and locked is True:
                         state = YALE_LOCK_STATE_LOCKED
                     elif closed is True and locked is False:
@@ -188,10 +203,10 @@ class YaleSmartAlarmClient:
         except:
             raise ConnectionError
         doors = {}
-        for device in devices['data']:
-            if device['type'] == "device_type.door_contact":
-                state = device['status1']
-                name = device['name']
+        for device in devices["data"]:
+            if device["type"] == "device_type.door_contact":
+                state = device["status1"]
+                name = device["name"]
                 if "device_status.dc_close" in state:
                     state = YALE_DOOR_CONTACT_STATE_CLOSED
                 elif "device_status.dc_open" in state:
@@ -209,12 +224,12 @@ class YaleSmartAlarmClient:
             raise AuthenticationError
         except:
             raise ConnectionError
-        return alarm_state.get('data')[0].get('mode')
+        return alarm_state.get("data")[0].get("mode")
 
     def set_armed_status(self, mode):
         params = {
             self._REQUEST_PARAM_AREA: self.area_id,
-            self._REQUEST_PARAM_MODE: mode
+            self._REQUEST_PARAM_MODE: mode,
         }
 
         try:

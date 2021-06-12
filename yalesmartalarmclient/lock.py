@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
-from .exceptions import AuthenticationError, ConnectionError
+
+from .exceptions import AuthenticationError
+from .exceptions import ConnectionError
 
 
 class YaleLockState(Enum):
@@ -24,7 +26,7 @@ class YaleLock:
     def __init__(self, device: dict, lock_api):
         self._lock_api = lock_api
         self._device: dict = device
-        self.name: str = device['name']
+        self.name: str = device["name"]
         self._state: YaleLockState = YaleLockState.UNKNOWN
         self.update(device)
 
@@ -41,35 +43,35 @@ class YaleLock:
 
     def update(self, device: dict):
         self._device = device
-        self.name = device['name']
+        self.name = device["name"]
         self._state = self._calc_state()
 
     def state(self):
         return self._state
 
     def area(self):
-        return self._device['area']
+        return self._device["area"]
 
     def sid(self):
-        return self._device['address']
+        return self._device["address"]
 
     def device_type(self):
-        return self._device['type']
+        return self._device["type"]
 
     def zone(self):
-        return self._device['no']
+        return self._device["no"]
 
     def set_state(self, new_state: YaleLockState):
         self._state = new_state
 
     def _calc_state(self):
-        state = self._device['status1']
+        state = self._device["status1"]
 
-        lock_status_str = self._device['minigw_lock_status']
-        if lock_status_str != '':
+        lock_status_str = self._device["minigw_lock_status"]
+        if lock_status_str != "":
             lock_status = int(lock_status_str, 16)
-            closed = ((lock_status & 16) == 16)
-            locked = ((lock_status & 1) == 1)
+            closed = (lock_status & 16) == 16
+            locked = (lock_status & 1) == 1
             if closed is True and locked is True:
                 state = YaleLockState.LOCKED
             elif closed is True and locked is False:
@@ -140,6 +142,7 @@ class YaleDoorManAPI:
         myfrontdoor [YaleLockState.UNLOCKED]
 
     """
+
     CODE_SUCCESS = "000"
     # lock status
     _ENDPOINT_DEVICES_STATUS = "/api/panel/device_status/"
@@ -168,8 +171,8 @@ class YaleDoorManAPI:
             raise AuthenticationError
         except:
             raise ConnectionError
-        for device in devices['data']:
-            if device['type'] == YaleLock.DEVICE_TYPE:
+        for device in devices["data"]:
+            if device["type"] == YaleLock.DEVICE_TYPE:
                 lock = YaleLock(device, lock_api=self)
                 yield lock
 
@@ -221,15 +224,17 @@ class YaleDoorManAPI:
             "zone": lock.zone(),
             "device_sid": lock.sid(),
             "device_type": lock.device_type(),
-            "request_value": "1"
+            "request_value": "1",
         }
         try:
-            operation_status = self.auth.post_authenticated(self._ENDPOINT_DEVICES_CONTROL, params=params)
+            operation_status = self.auth.post_authenticated(
+                self._ENDPOINT_DEVICES_CONTROL, params=params
+            )
         except AuthenticationError:
             raise AuthenticationError
         except:
             raise ConnectionError
-        success = operation_status['code'] == self.CODE_SUCCESS
+        success = operation_status["code"] == self.CODE_SUCCESS
         if success:
             lock.set_state(YaleLockState.LOCKED)
         return success
@@ -258,18 +263,16 @@ class YaleDoorManAPI:
             >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
         """
-        params = {
-            "area": lock.area(),
-            "zone": lock.zone(),
-            "pincode": pin_code
-        }
+        params = {"area": lock.area(), "zone": lock.zone(), "pincode": pin_code}
         try:
-            operation_status = self.auth.post_authenticated(self._ENDPOINT_DEVICES_UNLOCK, params=params)
+            operation_status = self.auth.post_authenticated(
+                self._ENDPOINT_DEVICES_UNLOCK, params=params
+            )
         except AuthenticationError:
             raise AuthenticationError
         except:
             raise ConnectionError
-        success = operation_status['code'] == self.CODE_SUCCESS
+        success = operation_status["code"] == self.CODE_SUCCESS
         if success:
             lock.set_state(YaleLockState.UNLOCKED)
         return success
