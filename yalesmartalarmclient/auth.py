@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+from typing import Any, Dict, Literal, Optional, Tuple, Union, cast
 
 import backoff
 import requests
@@ -29,7 +30,8 @@ class YaleAuth:
     _MAX_RETRY_SECONDS = 30
     _MAX_TRIES = 5
 
-    def give_up(e):
+    @staticmethod
+    def _give_up(e: requests.exceptions.RequestException) -> bool:
         """Give up on connecting."""
         try:
             status = e.response.status_code
@@ -44,13 +46,13 @@ class YaleAuth:
         "exception": requests.exceptions.RequestException,
         "max_tries": _MAX_TRIES,
         "max_time": _MAX_RETRY_SECONDS,
-        "giveup": give_up,
+        "giveup": _give_up,
     }
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str) -> None:
         self.username = username
         self.password = password
-        self.refresh_token = None
+        self.refresh_token: Optional[str] = None
         try:
             self._authorize()
         except AuthenticationError:
@@ -61,11 +63,11 @@ class YaleAuth:
             raise ConnectionError
 
     @property
-    def auth_headers(self):
+    def auth_headers(self) -> Dict[str, str]:
         return {"Authorization": "Bearer " + self.access_token}
 
     @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
-    def get_authenticated(self, endpoint: str):
+    def get_authenticated(self, endpoint: str) -> Dict[str, Any]:
         """
         Execute an GET request on an endpoint.
         Args:
@@ -86,15 +88,17 @@ class YaleAuth:
             )
             response.raise_for_status()
 
-        return response.json()
+        return cast(Dict[str, Any], response.json())
 
     @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
-    def post_authenticated(self, endpoint: str, params: dict = None):
+    def post_authenticated(
+        self, endpoint: str, params: Optional[Dict[Any, Any]] = None
+    ) -> Union[Literal[True], Dict[str, Any]]:
         if "panic" in endpoint:
             url = self._HOST[:-5] + endpoint
         else:
             url = self._HOST + endpoint
-        response = requests.post(
+        response: requests.Response = requests.post(
             url,
             headers=self.auth_headers,
             data=params,
@@ -113,9 +117,9 @@ class YaleAuth:
         if "panic" in endpoint:
             return True
         else:
-            return response.json()
+            return cast(Dict[str, Any], response.json())
 
-    def _update_services(self):
+    def _update_services(self) -> None:
         data = self.get_authenticated(self._ENDPOINT_SERVICES)
         url = data.get("yapi")
         if url is not None:
@@ -130,7 +134,7 @@ class YaleAuth:
             _LOGGER.debug("Unable to fetch services")
 
     @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
-    def _authorize(self):
+    def _authorize(self) -> Tuple[str, str]:
         if self.refresh_token:
             payload = {
                 "grant_type": "refresh_token",
@@ -149,7 +153,7 @@ class YaleAuth:
 
         _LOGGER.debug("Attempting authorization")
 
-        response = requests.post(
+        response: requests.Response = requests.post(
             url, headers=headers, data=payload, timeout=self._DEFAULT_REQUEST_TIMEOUT
         )
         response.raise_for_status()
@@ -170,7 +174,7 @@ class YaleAuth:
         _LOGGER.info("Authorization to Yale Alarm API successful.")
 
         self.refresh_token = data.get(self._YALE_AUTHENTICATION_REFRESH_TOKEN)
-        self.access_token = data.get(self._YALE_AUTHENTICATION_ACCESS_TOKEN)
+        self.access_token: str = data.get(self._YALE_AUTHENTICATION_ACCESS_TOKEN)
         if self.refresh_token is None or self.access_token is None:
             raise Exception(
                 "Failed to authenticate with Yale Smart Alarm. Invalid token."
