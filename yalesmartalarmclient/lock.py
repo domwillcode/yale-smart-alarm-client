@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module for interacting with a Yale Doorman lock."""
 from enum import Enum
-from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, cast
 
 from requests import RequestException
 
