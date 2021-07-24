@@ -51,6 +51,7 @@ class YaleAuth:
         self.username = username
         self.password = password
         self.refresh_token: Optional[str] = None
+        self.access_token: Optional[str] = None
         try:
             self._authorize()
         except AuthenticationError as e:
@@ -182,7 +183,7 @@ class YaleAuth:
         _LOGGER.info("Authorization to Yale Alarm API successful.")
 
         self.refresh_token = data.get(self._YALE_AUTHENTICATION_REFRESH_TOKEN)
-        self.access_token: str = data.get(self._YALE_AUTHENTICATION_ACCESS_TOKEN)
+        self.access_token = data.get(self._YALE_AUTHENTICATION_ACCESS_TOKEN)
         if self.refresh_token is None or self.access_token is None:
             raise AuthenticationError(
                 "Failed to authenticate with Yale Smart Alarm. Invalid token."
