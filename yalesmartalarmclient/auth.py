@@ -1,7 +1,12 @@
 """Module for handling authentication against the Yale Smart API."""
 import logging
-from typing import Any, Dict, Literal, Optional, Tuple, Union, cast
+from typing import Any, Dict, Optional, Tuple, Union, cast
 
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+    
 import backoff
 import requests
 
