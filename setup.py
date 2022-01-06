@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='yalesmartalarmclient',
     py_modules=['yalesmartalarmclient'],
-    version='0.3.5',
+    version='0.3.6',
     description='Interact with Yale Smart Alarm systems',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -16,7 +16,7 @@ setuptools.setup(
     download_url='https://github.com/domwillcode/yale-smart-alarm-client',
     keywords=['alarm', 'Yale', 'Smart Alarm'],
     package_data={'': ['data/*.json']},
-    install_requires=['requests>=2.0.0','backoff>=1.10.0'],
+    install_requires=['requests>=2.0.0'],
     packages=setuptools.find_packages(),
     include_package_data=True,
     zip_safe=False,

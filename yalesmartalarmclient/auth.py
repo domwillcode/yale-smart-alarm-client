@@ -1,11 +1,19 @@
 """Module for handling authentication against the Yale Smart API."""
 import logging
-from typing import Any, Dict, Literal, Optional, Tuple, Union, cast
+from typing import Any, Dict, Optional, Tuple, cast
 
-import backoff
 import requests
 
-from .exceptions import AuthenticationError
+from .exceptions import AuthenticationError, UnknownError
+from .const import (
+    HOST,
+    ENDPOINT_TOKEN,
+    ENDPOINT_SERVICES,
+    YALE_AUTH_TOKEN,
+    YALE_AUTHENTICATION_REFRESH_TOKEN,
+    YALE_AUTHENTICATION_ACCESS_TOKEN,
+    DEFAULT_REQUEST_TIMEOUT,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,60 +21,20 @@ _LOGGER = logging.getLogger(__name__)
 class YaleAuth:
     """Handle authentication and creating authorized calls on the yale apis."""
 
-    YALE_CODE_RESULT_SUCCESS = "000"
-
-    _HOST = "https://mob.yalehomesystem.co.uk/yapi"
-    _ENDPOINT_TOKEN = "/o/token/"
-    _ENDPOINT_SERVICES = "/services/"
-    _YALE_AUTH_TOKEN = "VnVWWDZYVjlXSUNzVHJhcUVpdVNCUHBwZ3ZPakxUeXNsRU1LUHBjdTpkd3RPbE15WEtENUJ5ZW1GWHV0am55eGhrc0U3V0ZFY2p0dFcyOXRaSWNuWHlSWHFsWVBEZ1BSZE1xczF4R3VwVTlxa1o4UE5ubGlQanY5Z2hBZFFtMHpsM0h4V3dlS0ZBcGZzakpMcW1GMm1HR1lXRlpad01MRkw3MGR0bmNndQ=="
-
-    _YALE_AUTHENTICATION_REFRESH_TOKEN = "refresh_token"
-    _YALE_AUTHENTICATION_ACCESS_TOKEN = "access_token"
-
-    _DEFAULT_REQUEST_TIMEOUT = 5
-    _MAX_RETRY_SECONDS = 30
-    _MAX_TRIES = 5
-
-    @staticmethod
-    def _give_up(e: requests.exceptions.RequestException) -> bool:
-        """Give up on connecting."""
-        try:
-            status = e.response.status_code
-            # if e.response.status_code == 401:
-            #    raise AuthenticationError
-        except requests.RequestException:
-            return False
-        raise AuthenticationError
-
-    BACKOFF_RETRY_ON_EXCEPTION_PARAMS = {
-        "wait_gen": backoff.expo,
-        "exception": requests.exceptions.RequestException,
-        "max_tries": _MAX_TRIES,
-        "max_time": _MAX_RETRY_SECONDS,
-        "giveup": _give_up,
-    }
-
     def __init__(self, username: str, password: str) -> None:
         """Initialize Authentication module."""
+        self._host = HOST
         self.username = username
         self.password = password
         self.refresh_token: Optional[str] = None
         self.access_token: Optional[str] = None
-        try:
-            self._authorize()
-        except AuthenticationError as e:
-            _LOGGER.error("Authentication incorrect")
-            raise e
-        except requests.RequestException as e:
-            _LOGGER.error("Problem connecting to API")
-            raise e
+        self._authorize()
 
     @property
     def auth_headers(self) -> Dict[str, str]:
         """Return authentication headers."""
         return {"Authorization": "Bearer " + self.access_token}
 
-    @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def get_authenticated(self, endpoint: str) -> Dict[str, Any]:
         """Execute an GET request on an endpoint.
 
@@ -77,23 +45,35 @@ class YaleAuth:
             a dictionary with the response.
 
         """
-        url = self._HOST + endpoint
-        response = requests.get(
-            url, headers=self.auth_headers, timeout=self._DEFAULT_REQUEST_TIMEOUT
-        )
-        if response.status_code != 200:
-            self._authorize()
+        url = self._host + endpoint
+
+        try:
             response = requests.get(
-                url, headers=self.auth_headers, timeout=self._DEFAULT_REQUEST_TIMEOUT
+                url, headers=self.auth_headers, timeout=DEFAULT_REQUEST_TIMEOUT
             )
             response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            _LOGGER.debug("Http Error: %s", error)
+            if response.status_code == 401:
+                self.refresh_token = None
+                self._authorize()
+                self.get_authenticated(endpoint)
+            raise ConnectionError(f"Connection error {error}")
+        except requests.exceptions.ConnectionError as error:
+            _LOGGER.debug("Connection Error: %s", error)
+            raise ConnectionError(f"Connection error {error}")
+        except requests.exceptions.Timeout as error:
+            _LOGGER.debug("Timeout Error: %s", error)
+            raise TimeoutError(f"Timeout {error}")
+        except requests.exceptions.RequestException as error:
+            _LOGGER.debug("Unknown Error: %s", error)
+            raise UnknownError(f"Unknown error {error}")
 
         return cast(Dict[str, Any], response.json())
 
-    @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def post_authenticated(
-        self, endpoint: str, params: Optional[Dict[Any, Any]] = None
-    ) -> Union[Literal[True], Dict[str, Any]]:
+            self, endpoint: str, params: Optional[Dict[Any, Any]] = None
+        ) -> Dict[str, Any]:
         """Execute a POST request on an endpoint.
 
         Args:
@@ -104,45 +84,53 @@ class YaleAuth:
 
         """
         if "panic" in endpoint:
-            url = self._HOST[:-5] + endpoint
+            url = self._host[:-5] + endpoint
         else:
-            url = self._HOST + endpoint
-        response: requests.Response = requests.post(
-            url,
-            headers=self.auth_headers,
-            data=params,
-            timeout=self._DEFAULT_REQUEST_TIMEOUT,
-        )
-        if response.status_code != 200:
-            self._authorize()
+            url = self._host + endpoint
+
+        try:
             response = requests.post(
                 url,
                 headers=self.auth_headers,
                 data=params,
-                timeout=self._DEFAULT_REQUEST_TIMEOUT,
+                timeout=DEFAULT_REQUEST_TIMEOUT,
             )
             response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            _LOGGER.debug("Http Error: %s", error)
+            if response.status_code == 401:
+                self.refresh_token = None
+                self._authorize()
+                self.post_authenticated(endpoint, params)
+            raise ConnectionError(f"Connection error {error}")
+        except requests.exceptions.ConnectionError as error:
+            _LOGGER.debug("Connection Error: %s", error)
+            raise ConnectionError(f"Connection error {error}")
+        except requests.exceptions.Timeout as error:
+            _LOGGER.debug("Timeout Error: %s", error)
+            raise TimeoutError(f"Timeout {error}")
+        except requests.exceptions.RequestException as error:
+            _LOGGER.debug("Unknown Error: %s", error)
+            raise UnknownError(f"Unknown error {error}")
 
         if "panic" in endpoint:
-            return True
-        else:
-            return cast(Dict[str, Any], response.json())
+            return {"panic": "triggered"}
+        return cast(Dict[str, Any], response.json())
 
     def _update_services(self) -> None:
-        data = self.get_authenticated(self._ENDPOINT_SERVICES)
+        data = self.get_authenticated(ENDPOINT_SERVICES)
         url = data.get("yapi")
         if url is not None:
             if len(url) > 0:
-                _LOGGER.debug("Yale URL updated: " + url)
+                _LOGGER.debug("Yale URL updated: %s", url)
                 if url.endswith("/"):
                     url = url[:-1]
-                self._HOST = url
+                self._host = url
             else:
                 _LOGGER.debug("Services URL is empty")
         else:
             _LOGGER.debug("Unable to fetch services")
 
-    @backoff.on_exception(**BACKOFF_RETRY_ON_EXCEPTION_PARAMS)
     def _authorize(self) -> Tuple[str, str]:
         if self.refresh_token:
             payload = {
@@ -156,34 +144,38 @@ class YaleAuth:
                 "password": self.password,
             }
         headers = {
-            "Authorization": "Basic " + self._YALE_AUTH_TOKEN,
+            "Authorization": "Basic " + YALE_AUTH_TOKEN,
         }
-        url = self._HOST + self._ENDPOINT_TOKEN
+        url = self._host + ENDPOINT_TOKEN
 
         _LOGGER.debug("Attempting authorization")
 
-        response: requests.Response = requests.post(
-            url, headers=headers, data=payload, timeout=self._DEFAULT_REQUEST_TIMEOUT
-        )
-        response.raise_for_status()
-        data = response.json()
-        _LOGGER.debug(f"Authorization response: {data}")
-        if data.get("error"):
-            if self.refresh_token:
-                # Maybe refresh_token has expired, try again with password
-                self.refresh_token = None
-                return self._authorize()
-            _LOGGER.debug(
-                "Failed to authenticate with Yale Smart Alarm. Error: %s", data.error
+        try:
+            response = requests.post(
+                url, headers=headers, data=payload, timeout=DEFAULT_REQUEST_TIMEOUT
             )
-            raise AuthenticationError(
-                "Failed to authenticate with Yale Smart Alarm. Check credentials."
-            )
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            _LOGGER.debug("Http Error: %s", error)
+            if response.status_code == 401:
+                raise AuthenticationError(f"Failed to authenticate {error}")
+            raise ConnectionError(f"Connection error {error}")
+        except requests.exceptions.ConnectionError as error:
+            _LOGGER.debug("Connection Error: %s", error)
+            raise ConnectionError(f"Connection error {error}")
+        except requests.exceptions.Timeout as error:
+            _LOGGER.debug("Timeout Error: %s", error)
+            raise TimeoutError(f"Timeout {error}")
+        except requests.exceptions.RequestException as error:
+            _LOGGER.debug("Unknown Error: %s", error)
+            raise UnknownError(f"Unknown error {error}")
 
+        data = response.json()
+        _LOGGER.debug("Authorization response: %s", data)
         _LOGGER.info("Authorization to Yale Alarm API successful.")
 
-        self.refresh_token = data.get(self._YALE_AUTHENTICATION_REFRESH_TOKEN)
-        self.access_token = data.get(self._YALE_AUTHENTICATION_ACCESS_TOKEN)
+        self.refresh_token = data.get(YALE_AUTHENTICATION_REFRESH_TOKEN)
+        self.access_token = data.get(YALE_AUTHENTICATION_ACCESS_TOKEN)
         if self.refresh_token is None or self.access_token is None:
             raise AuthenticationError(
                 "Failed to authenticate with Yale Smart Alarm. Invalid token."

@@ -23,8 +23,8 @@ class YaleLockState(Enum):
 class YaleLock:
     """This is an abstraction of a remove Yale lock.
 
-    The object created by this class attempts to reflect the remote state, and also has the possibilty of
-    locking/unlocking the lock state.
+    The object created by this class attempts to reflect the remote state,
+    and also has the possibilty of locking/unlocking the lock state.
 
     Objects of this class shall usually be craeted by the lock_api class.
     """
@@ -113,10 +113,10 @@ class YaleLock:
         """
         try:
             return self._lock_api.close_lock(lock=self)
-        except AuthenticationError as e:
-            raise e
-        except RequestException as e:
-            raise e
+        except AuthenticationError as error:
+            raise error
+        except RequestException as error:
+            raise error
 
     def open(self, pin_code: str) -> bool:
         """Attempt to open the lock.
@@ -125,10 +125,10 @@ class YaleLock:
         """
         try:
             return self._lock_api.open_lock(lock=self, pin_code=pin_code)
-        except AuthenticationError as e:
-            raise e
-        except RequestException as e:
-            raise e
+        except AuthenticationError as error:
+            raise error
+        except RequestException as error:
+            raise error
 
 
 class YaleDoorManAPI:
@@ -185,10 +185,10 @@ class YaleDoorManAPI:
         """
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except AuthenticationError as e:
-            raise e
-        except RequestException as e:
-            raise e
+        except AuthenticationError as error:
+            raise error
+        except RequestException as error:
+            raise error
         for device in devices["data"]:
             if device["type"] == YaleLock.DEVICE_TYPE:
                 lock = YaleLock(device, lock_api=self)
@@ -248,10 +248,10 @@ class YaleDoorManAPI:
             operation_status = self.auth.post_authenticated(
                 self._ENDPOINT_DEVICES_CONTROL, params=params
             )
-        except AuthenticationError as e:
-            raise e
-        except RequestException as e:
-            raise e
+        except AuthenticationError as error:
+            raise error
+        except RequestException as error:
+            raise error
 
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
@@ -287,10 +287,10 @@ class YaleDoorManAPI:
             operation_status = self.auth.post_authenticated(
                 self._ENDPOINT_DEVICES_UNLOCK, params=params
             )
-        except AuthenticationError as e:
-            raise e
-        except RequestException as e:
-            raise e
+        except AuthenticationError as error:
+            raise error
+        except RequestException as error:
+            raise error
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
             lock.set_state(YaleLockState.UNLOCKED)
