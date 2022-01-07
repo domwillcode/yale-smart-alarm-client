@@ -66,6 +66,9 @@ class YaleAuth:
             _LOGGER.debug("Timeout Error: %s", error)
             raise TimeoutError(f"Timeout {error}")
         except requests.exceptions.RequestException as error:
+            _LOGGER.debug("Requests Error: %s", error)
+            raise UnknownError(f"Requests error {error}")
+        except Exception as error:
             _LOGGER.debug("Unknown Error: %s", error)
             raise UnknownError(f"Unknown error {error}")
 
@@ -110,6 +113,9 @@ class YaleAuth:
             _LOGGER.debug("Timeout Error: %s", error)
             raise TimeoutError(f"Timeout {error}")
         except requests.exceptions.RequestException as error:
+            _LOGGER.debug("Requests Error: %s", error)
+            raise UnknownError(f"Requests error {error}")
+        except Exception as error:
             _LOGGER.debug("Unknown Error: %s", error)
             raise UnknownError(f"Unknown error {error}")
 
@@ -167,6 +173,9 @@ class YaleAuth:
             _LOGGER.debug("Timeout Error: %s", error)
             raise TimeoutError(f"Timeout {error}")
         except requests.exceptions.RequestException as error:
+            _LOGGER.debug("Requests Error: %s", error)
+            raise UnknownError(f"Requests error {error}")
+        except Exception as error:
             _LOGGER.debug("Unknown Error: %s", error)
             raise UnknownError(f"Unknown error {error}")
 
