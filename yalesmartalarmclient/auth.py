@@ -54,8 +54,9 @@ class YaleAuth:
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
             _LOGGER.debug("Http Error: %s", error)
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 self.refresh_token = None
+                self.access_token = None
                 self._authorize()
                 self.get_authenticated(endpoint)
             raise ConnectionError(f"Connection error {error}")
@@ -101,8 +102,9 @@ class YaleAuth:
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
             _LOGGER.debug("Http Error: %s", error)
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 self.refresh_token = None
+                self.access_token = None
                 self._authorize()
                 self.post_authenticated(endpoint, params)
             raise ConnectionError(f"Connection error {error}")
@@ -163,7 +165,7 @@ class YaleAuth:
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
             _LOGGER.debug("Http Error: %s", error)
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 raise AuthenticationError(f"Failed to authenticate {error}")
             raise ConnectionError(f"Connection error {error}")
         except requests.exceptions.ConnectionError as error:
