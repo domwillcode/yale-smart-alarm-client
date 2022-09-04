@@ -240,7 +240,7 @@ class YaleSmartAlarmClient:
                 time.sleep(5)
                 return self.get_armed_status(retry - 1)
             raise error
-        return cast(str, alarm_state.get("data")[0].get("mode"))
+        return cast(str, alarm_state.get("data", [])[0].get("mode"))
 
     def set_armed_status(self, mode: str) -> bool:
         """Set armed status.
