@@ -2,8 +2,10 @@
 
 See https://github.com/domwillcode/yale-smart-alarm-client for more information.
 """
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 from .auth import YaleAuth
 from .lock import YaleDoorManAPI
@@ -49,7 +51,7 @@ class YaleSmartAlarmClient:
         self.area_id = area_id
         self.lock_api: YaleDoorManAPI = YaleDoorManAPI(auth=self.auth)
 
-    def get_all(self) -> Dict[str, Any]:
+    def get_all(self) -> dict[str, Any]:
         """DEBUG function to get full visibility from API for local testing."""
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
         mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
@@ -61,25 +63,25 @@ class YaleSmartAlarmClient:
         auth_check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
 
         return {
-            "DEVICES":devices["data"],
-            "MODE":mode["data"],
-            "STATUS":status["data"],
-            "CYCLE":cycle["data"],
-            "ONLINE":online["data"],
-            "HISTORY":history["data"],
-            "PANEL INFO":panel_info["data"],
-            "AUTH CHECK":auth_check["data"],
+            "DEVICES": devices["data"],
+            "MODE": mode["data"],
+            "STATUS": status["data"],
+            "CYCLE": cycle["data"],
+            "ONLINE": online["data"],
+            "HISTORY": history["data"],
+            "PANEL INFO": panel_info["data"],
+            "AUTH CHECK": auth_check["data"],
         }
 
-    def get_all_devices(self) -> Dict[str, Any]:
+    def get_all_devices(self) -> dict[str, Any]:
         """Return full json for all devices."""
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        return cast(Dict[str, Any], devices["data"])
+        return cast(dict[str, Any], devices["data"])
 
-    def get_cycle(self) -> Dict[str, Any]:
+    def get_cycle(self) -> dict[str, Any]:
         """Return full cycle."""
         cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
-        return cast(Dict[str, Any], cycle["data"])
+        return cast(dict[str, Any], cycle["data"])
 
     def get_status(self) -> str:
         """Return status from system."""
@@ -92,30 +94,30 @@ class YaleSmartAlarmClient:
             return "ok"
         return "error"
 
-    def get_online(self) -> Dict[str, Any]:
+    def get_online(self) -> dict[str, Any]:
         """Return available from system."""
         online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
-        return cast(Dict[str, Any], online["data"])
+        return cast(dict[str, Any], online["data"])
 
-    def get_panel_info(self) -> Dict[str, Any]:
+    def get_panel_info(self) -> dict[str, Any]:
         """Return panel information."""
         panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
-        return cast(Dict[str, Any], panel_info["data"])
+        return cast(dict[str, Any], panel_info["data"])
 
-    def get_history(self) -> Dict[str, Any]:
+    def get_history(self) -> dict[str, Any]:
         """Return the log from the system."""
         history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
-        return cast(Dict[str, Any], history["data"])
+        return cast(dict[str, Any], history["data"])
 
-    def get_auth_check(self) -> Dict[str, Any]:
+    def get_auth_check(self) -> dict[str, Any]:
         """Return the authorization check."""
         check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
-        return cast(Dict[str, Any], check["data"])
+        return cast(dict[str, Any], check["data"])
 
-    def get_locks_status(self) -> Dict[str, str]:
+    def get_locks_status(self) -> dict[str, str]:
         """Return all locks status from the system."""
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        locks: Dict[str, str] = {}
+        locks: dict[str, str] = {}
         for device in devices["data"]:
             if device["type"] == "device_type.door_lock":
                 state = device["status1"]
@@ -140,10 +142,10 @@ class YaleSmartAlarmClient:
                 locks[name] = state
         return locks
 
-    def get_doors_status(self) -> Dict[str, str]:
+    def get_doors_status(self) -> dict[str, str]:
         """Return all door contacts status from the system."""
         devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        doors: Dict[str, str] = {}
+        doors: dict[str, str] = {}
         for device in devices["data"]:
             if device["type"] == "device_type.door_contact":
                 state = device["status1"]

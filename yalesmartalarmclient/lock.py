@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """Module for interacting with a Yale Doorman lock."""
+from __future__ import annotations
+
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
+from collections.abc import Iterator
 
 from requests import RequestException
 
@@ -31,10 +34,10 @@ class YaleLock:
 
     DEVICE_TYPE: str = "device_type.door_lock"
 
-    def __init__(self, device: Dict[str, Any], lock_api: "YaleDoorManAPI") -> None:
+    def __init__(self, device: dict[str, Any], lock_api: "YaleDoorManAPI") -> None:
         """Initialize a Yale lock device."""
         self._lock_api = lock_api
-        self._device: Dict[str, Any] = device
+        self._device: dict[str, Any] = device
         self.name: str = device["name"]
         self._state: YaleLockState = YaleLockState.UNKNOWN
         self.update(device)
@@ -52,7 +55,7 @@ class YaleLock:
         """Return string representation of a lock."""
         return f"{self.name} [{self.state()}]"
 
-    def update(self, device: Dict[str, Any]) -> None:
+    def update(self, device: dict[str, Any]) -> None:
         """Update the device."""
         self._device = device
         self.name = device["name"]
@@ -194,7 +197,7 @@ class YaleDoorManAPI:
                 lock = YaleLock(device, lock_api=self)
                 yield lock
 
-    def get(self, name: str) -> Optional[YaleLock]:
+    def get(self, name: str) -> YaleLock | None:
         """Get a single lock with matching name.
 
         Args:
