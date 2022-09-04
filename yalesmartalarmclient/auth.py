@@ -61,19 +61,19 @@ class YaleAuth:
                 self.access_token = None
                 self._authorize()
                 self.get_authenticated(endpoint)
-            raise ConnectionError(f"Connection error {error}")
+            raise ConnectionError(f"Connection error {error}") from error
         except requests.exceptions.ConnectionError as error:
             _LOGGER.debug("Connection Error: %s", error)
-            raise ConnectionError(f"Connection error {error}")
+            raise ConnectionError(f"Connection error {error}") from error
         except requests.exceptions.Timeout as error:
             _LOGGER.debug("Timeout Error: %s", error)
-            raise TimeoutError(f"Timeout {error}")
+            raise TimeoutError(f"Timeout {error}") from error
         except requests.exceptions.RequestException as error:
             _LOGGER.debug("Requests Error: %s", error)
-            raise UnknownError(f"Requests error {error}")
+            raise UnknownError(f"Requests error {error}") from error
         except Exception as error:
             _LOGGER.debug("Unknown Error: %s", error)
-            raise UnknownError(f"Unknown error {error}")
+            raise UnknownError(f"Unknown error {error}") from error
 
         return cast(dict[str, Any], response.json())
 
@@ -109,19 +109,19 @@ class YaleAuth:
                 self.access_token = None
                 self._authorize()
                 self.post_authenticated(endpoint, params)
-            raise ConnectionError(f"Connection error {error}")
+            raise ConnectionError(f"Connection error {error}") from error
         except requests.exceptions.ConnectionError as error:
             _LOGGER.debug("Connection Error: %s", error)
-            raise ConnectionError(f"Connection error {error}")
+            raise ConnectionError(f"Connection error {error}") from error
         except requests.exceptions.Timeout as error:
             _LOGGER.debug("Timeout Error: %s", error)
-            raise TimeoutError(f"Timeout {error}")
+            raise TimeoutError(f"Timeout {error}") from error
         except requests.exceptions.RequestException as error:
             _LOGGER.debug("Requests Error: %s", error)
-            raise UnknownError(f"Requests error {error}")
+            raise UnknownError(f"Requests error {error}") from error
         except Exception as error:
             _LOGGER.debug("Unknown Error: %s", error)
-            raise UnknownError(f"Unknown error {error}")
+            raise UnknownError(f"Unknown error {error}") from error
 
         if "panic" in endpoint:
             return {"panic": "triggered"}
@@ -168,24 +168,24 @@ class YaleAuth:
         except requests.exceptions.HTTPError as error:
             _LOGGER.debug("Http Error: %s", error)
             if response.status_code in [401, 403]:
-                raise AuthenticationError(f"Failed to authenticate {error}")
-            raise ConnectionError(f"Connection error {error}")
+                raise AuthenticationError(f"Failed to authenticate {error}") from error
+            raise ConnectionError(f"Connection error {error}") from error
         except requests.exceptions.ConnectionError as error:
             _LOGGER.debug("Connection Error: %s", error)
-            raise ConnectionError(f"Connection error {error}")
+            raise ConnectionError(f"Connection error {error}") from error
         except requests.exceptions.Timeout as error:
             _LOGGER.debug("Timeout Error: %s", error)
-            raise TimeoutError(f"Timeout {error}")
+            raise TimeoutError(f"Timeout {error}") from error
         except requests.exceptions.RequestException as error:
             _LOGGER.debug("Requests Error: %s", error)
-            raise UnknownError(f"Requests error {error}")
+            raise UnknownError(f"Requests error {error}") from error
         except Exception as error:
             _LOGGER.debug("Unknown Error: %s", error)
-            raise UnknownError(f"Unknown error {error}")
+            raise UnknownError(f"Unknown error {error}") from error
 
         data = response.json()
         _LOGGER.debug("Authorization response: %s", data)
-        _LOGGER.info("Authorization to Yale Alarm API successful.")
+        _LOGGER.info("Authorization to Yale Alarm API successful")
 
         self.refresh_token = data.get(YALE_AUTHENTICATION_REFRESH_TOKEN)
         self.access_token = data.get(YALE_AUTHENTICATION_ACCESS_TOKEN)
