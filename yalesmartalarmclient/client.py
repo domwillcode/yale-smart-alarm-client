@@ -84,7 +84,7 @@ class YaleSmartAlarmClient:
                 "Retry %d on path %s", 4 - retry, self._ENDPOINT_DEVICES_STATUS
             )
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_all_devices(retry - 1)
             raise error
         return cast(dict[str, Any], devices["data"])
@@ -96,7 +96,7 @@ class YaleSmartAlarmClient:
         except Exception as error:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_CYCLE)
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_cycle(retry - 1)
             raise error
         return cast(dict[str, Any], cycle["data"])
@@ -108,7 +108,7 @@ class YaleSmartAlarmClient:
         except Exception as error:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_STATUS)
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_status(retry - 1)
             raise error
         acfail = status["data"]["acfail"]
@@ -126,7 +126,7 @@ class YaleSmartAlarmClient:
         except Exception as error:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_ONLINE)
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_online(retry - 1)
             raise error
         return cast(dict[str, Any], online["data"])
@@ -138,7 +138,7 @@ class YaleSmartAlarmClient:
         except Exception as error:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_PANEL_INFO)
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_panel_info(retry - 1)
             raise error
         return cast(dict[str, Any], panel_info["data"])
@@ -150,7 +150,7 @@ class YaleSmartAlarmClient:
         except Exception as error:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_HISTORY)
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_history(retry - 1)
             raise error
         return cast(dict[str, Any], history["data"])
@@ -162,7 +162,7 @@ class YaleSmartAlarmClient:
         except Exception as error:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_CHECK)
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_auth_check(retry - 1)
             raise error
         return cast(dict[str, Any], check["data"])
@@ -176,7 +176,7 @@ class YaleSmartAlarmClient:
                 "Retry %d on path %s", 4 - retry, self._ENDPOINT_DEVICES_STATUS
             )
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_locks_status(retry - 1)
             raise error
         locks: dict[str, str] = {}
@@ -213,7 +213,7 @@ class YaleSmartAlarmClient:
                 "Retry %d on path %s", 4 - retry, self._ENDPOINT_DEVICES_STATUS
             )
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_doors_status(retry - 1)
             raise error
         doors: dict[str, str] = {}
@@ -237,7 +237,7 @@ class YaleSmartAlarmClient:
         except Exception as error:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_GET_MODE)
             if retry > 0:
-                time.sleep(7)
+                time.sleep(5)
                 return self.get_armed_status(retry - 1)
             raise error
         return cast(str, alarm_state.get("data")[0].get("mode"))
