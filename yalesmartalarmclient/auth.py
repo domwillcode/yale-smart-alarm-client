@@ -1,6 +1,8 @@
 """Module for handling authentication against the Yale Smart API."""
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import Any, Optional, cast
 
 import requests
 
@@ -31,11 +33,11 @@ class YaleAuth:
         self._authorize()
 
     @property
-    def auth_headers(self) -> Dict[str, str]:
+    def auth_headers(self) -> dict[str, str]:
         """Return authentication headers."""
         return {"Authorization": "Bearer " + self.access_token}
 
-    def get_authenticated(self, endpoint: str) -> Dict[str, Any]:
+    def get_authenticated(self, endpoint: str) -> dict[str, Any]:
         """Execute an GET request on an endpoint.
 
         Args:
@@ -73,11 +75,11 @@ class YaleAuth:
             _LOGGER.debug("Unknown Error: %s", error)
             raise UnknownError(f"Unknown error {error}")
 
-        return cast(Dict[str, Any], response.json())
+        return cast(dict[str, Any], response.json())
 
     def post_authenticated(
-            self, endpoint: str, params: Optional[Dict[Any, Any]] = None
-        ) -> Dict[str, Any]:
+        self, endpoint: str, params: Optional[dict[Any, Any]] = None
+    ) -> dict[str, Any]:
         """Execute a POST request on an endpoint.
 
         Args:
@@ -123,7 +125,7 @@ class YaleAuth:
 
         if "panic" in endpoint:
             return {"panic": "triggered"}
-        return cast(Dict[str, Any], response.json())
+        return cast(dict[str, Any], response.json())
 
     def _update_services(self) -> None:
         data = self.get_authenticated(ENDPOINT_SERVICES)
@@ -139,7 +141,7 @@ class YaleAuth:
         else:
             _LOGGER.debug("Unable to fetch services")
 
-    def _authorize(self) -> Tuple[str, str]:
+    def _authorize(self) -> tuple[str, str]:
         if self.refresh_token:
             payload = {
                 "grant_type": "refresh_token",
