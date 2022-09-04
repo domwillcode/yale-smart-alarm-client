@@ -2,9 +2,15 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import requests
+from requests.exceptions import (  # pylint: disable=redefined-builtin
+    HTTPError,
+    ConnectionError,
+    Timeout,
+    RequestException,
+)
 
 from .exceptions import AuthenticationError, UnknownError
 from .const import (
@@ -28,14 +34,16 @@ class YaleAuth:
         self._host = HOST
         self.username = username
         self.password = password
-        self.refresh_token: Optional[str] = None
-        self.access_token: Optional[str] = None
+        self.refresh_token: str | None = None
+        self.access_token: str | None = None
         self._authorize()
 
     @property
     def auth_headers(self) -> dict[str, str]:
         """Return authentication headers."""
-        return {"Authorization": "Bearer " + self.access_token}
+        if self.access_token:
+            return {"Authorization": "Bearer " + self.access_token}
+        return {"Authorization": "Bearer "}
 
     def get_authenticated(self, endpoint: str) -> dict[str, Any]:
         """Execute an GET request on an endpoint.
@@ -54,7 +62,7 @@ class YaleAuth:
                 url, headers=self.auth_headers, timeout=DEFAULT_REQUEST_TIMEOUT
             )
             response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
+        except HTTPError as error:
             _LOGGER.debug("Http Error: %s", error)
             if response.status_code in [401, 403]:
                 self.refresh_token = None
@@ -62,13 +70,13 @@ class YaleAuth:
                 self._authorize()
                 self.get_authenticated(endpoint)
             raise ConnectionError(f"Connection error {error}") from error
-        except requests.exceptions.ConnectionError as error:
+        except ConnectionError as error:
             _LOGGER.debug("Connection Error: %s", error)
             raise ConnectionError(f"Connection error {error}") from error
-        except requests.exceptions.Timeout as error:
+        except Timeout as error:
             _LOGGER.debug("Timeout Error: %s", error)
             raise TimeoutError(f"Timeout {error}") from error
-        except requests.exceptions.RequestException as error:
+        except RequestException as error:
             _LOGGER.debug("Requests Error: %s", error)
             raise UnknownError(f"Requests error {error}") from error
         except Exception as error:
@@ -78,7 +86,7 @@ class YaleAuth:
         return cast(dict[str, Any], response.json())
 
     def post_authenticated(
-        self, endpoint: str, params: Optional[dict[Any, Any]] = None
+        self, endpoint: str, params: dict[Any, Any] | None = None
     ) -> dict[str, Any]:
         """Execute a POST request on an endpoint.
 
@@ -102,7 +110,7 @@ class YaleAuth:
                 timeout=DEFAULT_REQUEST_TIMEOUT,
             )
             response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
+        except HTTPError as error:
             _LOGGER.debug("Http Error: %s", error)
             if response.status_code in [401, 403]:
                 self.refresh_token = None
@@ -110,13 +118,13 @@ class YaleAuth:
                 self._authorize()
                 self.post_authenticated(endpoint, params)
             raise ConnectionError(f"Connection error {error}") from error
-        except requests.exceptions.ConnectionError as error:
+        except ConnectionError as error:
             _LOGGER.debug("Connection Error: %s", error)
             raise ConnectionError(f"Connection error {error}") from error
-        except requests.exceptions.Timeout as error:
+        except Timeout as error:
             _LOGGER.debug("Timeout Error: %s", error)
             raise TimeoutError(f"Timeout {error}") from error
-        except requests.exceptions.RequestException as error:
+        except RequestException as error:
             _LOGGER.debug("Requests Error: %s", error)
             raise UnknownError(f"Requests error {error}") from error
         except Exception as error:
@@ -165,18 +173,18 @@ class YaleAuth:
                 url, headers=headers, data=payload, timeout=DEFAULT_REQUEST_TIMEOUT
             )
             response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
+        except HTTPError as error:
             _LOGGER.debug("Http Error: %s", error)
             if response.status_code in [401, 403]:
                 raise AuthenticationError(f"Failed to authenticate {error}") from error
             raise ConnectionError(f"Connection error {error}") from error
-        except requests.exceptions.ConnectionError as error:
+        except ConnectionError as error:
             _LOGGER.debug("Connection Error: %s", error)
             raise ConnectionError(f"Connection error {error}") from error
-        except requests.exceptions.Timeout as error:
+        except Timeout as error:
             _LOGGER.debug("Timeout Error: %s", error)
             raise TimeoutError(f"Timeout {error}") from error
-        except requests.exceptions.RequestException as error:
+        except RequestException as error:
             _LOGGER.debug("Requests Error: %s", error)
             raise UnknownError(f"Requests error {error}") from error
         except Exception as error:

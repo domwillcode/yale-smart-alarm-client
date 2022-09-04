@@ -46,10 +46,9 @@ class YaleLock:
         """Compare two lock objects."""
         if isinstance(other, self.__class__):
             return self.name == other.name
-        elif isinstance(other, str):
+        if isinstance(other, str):
             return self.name == other
-        else:
-            return False
+        return False
 
     def __str__(self) -> str:
         """Return string representation of a lock."""
