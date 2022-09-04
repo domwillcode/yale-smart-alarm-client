@@ -53,16 +53,23 @@ class YaleSmartAlarmClient:
         self.area_id = area_id
         self.lock_api: YaleDoorManAPI = YaleDoorManAPI(auth=self.auth)
 
-    def get_all(self) -> dict[str, Any]:
-        """DEBUG function to get full visibility from API for local testing."""
-        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
-        status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
-        cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
-        online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
-        history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
-        panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
-        auth_check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
+    def get_all(self, retry: int = 3) -> dict[str, Any]:
+        """Get all information."""
+        try:
+            devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+            mode = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
+            status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+            cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
+            online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+            history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
+            panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
+            auth_check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
+        except Exception as error:
+            _LOGGER.debug("Retry %d on get_all function", 4 - retry)
+            if retry > 0:
+                time.sleep(5)
+                return self.get_all(retry - 1)
+            raise error
 
         return {
             "DEVICES": devices["data"],
