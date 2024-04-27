@@ -15,11 +15,11 @@ setuptools.setup(
     url='https://github.com/domwillcode/yale-smart-alarm-client',
     download_url='https://github.com/domwillcode/yale-smart-alarm-client',
     keywords=['alarm', 'Yale', 'Smart Alarm'],
-    package_data={'': ['data/*.json']},
+    package_data={"yalesmartalarmclient": ["py.typed"]},
     install_requires=['requests>=2.0.0'],
     packages=setuptools.find_packages(),
     include_package_data=True,
-    zip_safe=False,
+    zip_safe=True,
     license="Apache 2.0",
     classifiers=[
         "Programming Language :: Python :: 3",
