@@ -198,28 +198,18 @@ class YaleLock:
         Returns:
             True if the operation was a success.
         """
-        try:
-            return self._lock_api.set_volume(lock=self, volume=volume)
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+        return self._lock_api.set_volume(lock=self, volume=volume)
     
-    def set_auto_lock(self, auto_lock: bool) -> bool:
+    def set_autolock(self, autolock: bool) -> bool:
         """Set the auto lock state of the lock.
 
         Args:
-            auto_lock: the new state of the auto lock.
+            autolock: the new state of the auto lock.
 
         Returns:
             True if the operation was a success.
         """
-        try:
-            return self._lock_api.set_auto_lock(lock=self, auto_lock=auto_lock)
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+        return self._lock_api.set_autolock(lock=self, autolock=autolock)
 
 class YaleDoorManAPI:
     """Represents the yale doorman api.
@@ -417,14 +407,11 @@ class YaleDoorManAPI:
             "val": volume.value,
             "idx": "01" # Hardcoded value in the app
         }
-        try:
-            operation_status = self.auth.post_authenticated(
-                self._ENDPOINT_DEVICES_CONFIG, params=params
-            )
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+
+        operation_status = self.auth.post_authenticated(
+            self._ENDPOINT_DEVICES_CONFIG, params=params
+        )
+
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
             lock._config.volume = volume
@@ -432,12 +419,12 @@ class YaleDoorManAPI:
             return self._put_lock_request(lock)
         return success
     
-    def set_auto_lock(self, lock: YaleLock, auto_lock: bool) -> bool:
+    def set_autolock(self, lock: YaleLock, autolock: bool) -> bool:
         """Set the auto lock state of the lock.
 
         Args:
             lock: the lock to set the auto lock state for.
-            auto_lock: the new state of the auto lock.
+            autolock: the new state of the auto lock.
 
         Returns:
             True if the operation was a success.
@@ -445,20 +432,17 @@ class YaleDoorManAPI:
         params = {
             "area": lock.area(),
             "zone": lock.zone(),
-            "val": "FF" if auto_lock else "00", # Hardcoded value in the app
+            "val": "FF" if autolock else "00", # Hardcoded value in the app
             "idx": "02" # Hardcoded value in the app
         }
-        try:
-            operation_status = self.auth.post_authenticated(
-                self._ENDPOINT_DEVICES_CONFIG, params=params
-            )
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+
+        operation_status = self.auth.post_authenticated(
+            self._ENDPOINT_DEVICES_CONFIG, params=params
+        )
+
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
-            lock._config.autolock = "FF" if auto_lock else "00"
+            lock._config.autolock = "FF" if autolock else "00"
             # For some reason the app calls _put_lock_request after setting auto lock
             return self._put_lock_request(lock)
         return success
