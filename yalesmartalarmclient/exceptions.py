@@ -1,19 +1,9 @@
-"""Exceptions for import."""
-
-
-from typing import Any
+"""Exceptions handling for Yale Smart Alarm."""
 
 
 class AuthenticationError(Exception):
     """Exception to indicate an issue with the authentication against the Yale Smart API."""
 
-    def __init__(self, *args: Any) -> None:
-        """Initialize the exception."""
-        Exception.__init__(self, *args)
 
 class UnknownError(Exception):
     """Exception to indicate an unknown issue against the Yale Smart API."""
-
-    def __init__(self, *args: Any) -> None:
-        """Initialize the exception."""
-        Exception.__init__(self, *args)
