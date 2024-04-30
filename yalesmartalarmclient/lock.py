@@ -77,6 +77,7 @@ class YaleLockConfig:
         conf = conf[:2] + self.autolock + conf[4:]
         conf = conf[:8] + self.language + conf[10:]
         conf = conf[:30] + self.arm_hold_time + conf[32:]
+        return conf
 
 class YaleLock:
     """This is an abstraction of a remove Yale lock.
@@ -414,7 +415,7 @@ class YaleDoorManAPI:
 
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
-            lock._config.volume = volume
+            lock._config.volume = volume.value
             # For some reason the app calls _put_lock_request after setting volume
             return self._put_lock_request(lock)
         return success
