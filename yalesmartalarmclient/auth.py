@@ -135,6 +135,46 @@ class YaleAuth:
             return {"panic": "triggered"}
         return cast(dict[str, Any], response.json())
 
+    def put_authenticated(self, endpoint: str) -> dict[str, Any]:
+        """Execute an PUT request on an endpoint.
+
+        Args:
+            endpoint: parts of an url.
+
+        Returns:
+            a dictionary with the response.
+
+        """
+        url = self._host + endpoint
+
+        try:
+            response = requests.put(
+                url, headers=self.auth_headers, timeout=DEFAULT_REQUEST_TIMEOUT
+            )
+            response.raise_for_status()
+        except HTTPError as error:
+            _LOGGER.debug("Http Error: %s", error)
+            if response.status_code in [401, 403]:
+                self.refresh_token = None
+                self.access_token = None
+                self._authorize()
+                self.put_authenticated(endpoint)
+            raise ConnectionError(f"Connection error {error}") from error
+        except ConnectionError as error:
+            _LOGGER.debug("Connection Error: %s", error)
+            raise ConnectionError(f"Connection error {error}") from error
+        except Timeout as error:
+            _LOGGER.debug("Timeout Error: %s", error)
+            raise TimeoutError(f"Timeout {error}") from error
+        except RequestException as error:
+            _LOGGER.debug("Requests Error: %s", error)
+            raise UnknownError(f"Requests error {error}") from error
+        except Exception as error:
+            _LOGGER.debug("Unknown Error: %s", error)
+            raise UnknownError(f"Unknown error {error}") from error
+
+        return cast(dict[str, Any], response.json())
+
     def _update_services(self) -> None:
         data = self.get_authenticated(ENDPOINT_SERVICES)
         url = data.get("yapi")
