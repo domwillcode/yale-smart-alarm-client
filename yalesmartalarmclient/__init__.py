@@ -1,2 +1,1 @@
 """Yalesmartalarmclient."""
-name = "yalesmartalarmclient"

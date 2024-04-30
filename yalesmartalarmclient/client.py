@@ -1,7 +1,5 @@
-"""Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API.
+"""Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API."""
 
-See https://github.com/domwillcode/yale-smart-alarm-client for more information.
-"""
 from __future__ import annotations
 
 import logging

@@ -1,4 +1,5 @@
 """Module for handling authentication against the Yale Smart API."""
+
 from __future__ import annotations
 
 import logging
