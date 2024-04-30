@@ -71,7 +71,7 @@ class YaleLockConfig:
         }
 
     def to_string(self) -> str:
-        # """Return the lock configuration as a string."""
+        """Return the lock configuration as a string."""
         conf = "0" * 32
         conf = conf[:0] + self.volume + conf[2:]
         conf = conf[:2] + self.autolock + conf[4:]
