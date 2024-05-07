@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any, cast
+from dataclasses import dataclass
 
 import time
 
@@ -24,6 +25,20 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class YaleSmartAlarmData:
+    """Data for Yale Smart Alarm client."""
+
+    devices: dict[str, Any] | None = None
+    mode: dict[str, Any] | None = None
+    status: dict[str, Any] | None = None
+    cycle: dict[str, Any] | None = None
+    online: dict[str, Any] | None = None
+    history: dict[str, Any] | None = None
+    panel_info: dict[str, Any] | None = None
+    auth_check: dict[str, Any] | None = None
 
 
 class YaleSmartAlarmClient:
@@ -51,7 +66,7 @@ class YaleSmartAlarmClient:
         self.area_id = area_id
         self.lock_api: YaleDoorManAPI = YaleDoorManAPI(auth=self.auth)
 
-    def get_all(self, retry: int = 3) -> dict[str, Any]:
+    def get_all(self, retry: int = 3) -> YaleSmartAlarmData:
         """Get all information."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
@@ -69,16 +84,34 @@ class YaleSmartAlarmClient:
                 return self.get_all(retry - 1)
             raise error
 
-        return {
-            "DEVICES": devices["data"],
-            "MODE": mode["data"],
-            "STATUS": status["data"],
-            "CYCLE": cycle["data"],
-            "ONLINE": online["data"],
-            "HISTORY": history["data"],
-            "PANEL INFO": panel_info["data"],
-            "AUTH CHECK": auth_check["data"],
-        }
+        return YaleSmartAlarmData(
+            devices=devices,
+            mode=mode,
+            status=status,
+            cycle=cycle,
+            online=online,
+            history=history,
+            panel_info=panel_info,
+            auth_check=auth_check,
+        )
+
+    def get_information(self, retry: int = 3) -> YaleSmartAlarmData:
+        """Get information."""
+        try:
+            status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
+            cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
+            online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
+            panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
+        except Exception as error:
+            _LOGGER.debug("Retry %d on get_information function", 4 - retry)
+            if retry > 0:
+                time.sleep(5)
+                return self.get_information(retry - 1)
+            raise error
+
+        return YaleSmartAlarmData(
+            status=status, cycle=cycle, online=online, panel_info=panel_info
+        )
 
     def get_all_devices(self, retry: int = 3) -> dict[str, Any]:
         """Return full json for all devices."""
