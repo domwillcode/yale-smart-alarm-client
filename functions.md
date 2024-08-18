@@ -97,5 +97,3 @@ Return true/false on alarm on/off:
 ```python
 client.is_armed()
 ```
-
-

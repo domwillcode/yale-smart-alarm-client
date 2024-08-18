@@ -83,5 +83,3 @@ Trigger panic button
 ```
 client.trigger_panic_button()
 ```
-
-
