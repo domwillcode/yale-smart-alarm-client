@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
 """Module for interacting with a Yale Doorman lock."""
+
 from __future__ import annotations
 
+from collections.abc import Iterator
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
-from collections.abc import Iterator
-
-from requests import RequestException
-
-from .exceptions import AuthenticationError
 
 if TYPE_CHECKING:
     from .auth import YaleAuth
+
 
 class YaleLockState(Enum):
     """Lock state enum."""
@@ -21,12 +18,14 @@ class YaleLockState(Enum):
     DOOR_OPEN = 3
     UNKNOWN = 4
 
+
 class YaleLockVolume(Enum):
     """Lock volume enum."""
 
     HIGH = "03"
     LOW = "02"
     OFF = "01"
+
 
 class YaleLockConfig:
     """Represents the configuration of a lock."""
@@ -77,25 +76,28 @@ class YaleLockConfig:
         conf = conf[:2] + self.autolock + conf[4:]
         conf = conf[:8] + self.language + conf[10:]
         conf = conf[:30] + self.arm_hold_time + conf[32:]
-        return conf
+        return conf  # noqa: RET504
+
 
 class YaleLock:
-    """This is an abstraction of a remove Yale lock.
+    """An abstraction of a remove Yale lock.
 
     The object created by this class attempts to reflect the remote state,
-    and also has the possibilty of locking/unlocking the lock state.
+    and also has the possibility of locking/unlocking the lock state.
 
-    Objects of this class shall usually be craeted by the lock_api class.
+    Objects of this class shall usually be created by the lock_api class.
     """
 
     DEVICE_TYPE: str = "device_type.door_lock"
 
-    def __init__(self, device: dict[str, Any], lock_api: "YaleDoorManAPI") -> None:
+    def __init__(self, device: dict[str, Any], lock_api: YaleDoorManAPI) -> None:
         """Initialize a Yale lock device."""
         self._lock_api = lock_api
         self._device: dict[str, Any] = device
         self.name: str = device["name"]
-        self._config: YaleLockConfig = YaleLockConfig(device["minigw_configuration_data"])
+        self._config: YaleLockConfig = YaleLockConfig(
+            device["minigw_configuration_data"]
+        )
         self._state: YaleLockState = YaleLockState.UNKNOWN
         self.update(device)
 
@@ -171,25 +173,15 @@ class YaleLock:
 
         Returns: True if the API returns success.
         """
-        try:
-            return self._lock_api.close_lock(lock=self)
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+        return self._lock_api.close_lock(lock=self)
 
     def open(self, pin_code: str) -> bool:
         """Attempt to open the lock.
 
         returns: True if the lock was opened.
         """
-        try:
-            return self._lock_api.open_lock(lock=self, pin_code=pin_code)
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
-    
+        return self._lock_api.open_lock(lock=self, pin_code=pin_code)
+
     def set_volume(self, volume: YaleLockVolume) -> bool:
         """Set the volume of the lock.
 
@@ -198,9 +190,10 @@ class YaleLock:
 
         Returns:
             True if the operation was a success.
+
         """
         return self._lock_api.set_volume(lock=self, volume=volume)
-    
+
     def set_autolock(self, autolock: bool) -> bool:
         """Set the auto lock state of the lock.
 
@@ -209,8 +202,10 @@ class YaleLock:
 
         Returns:
             True if the operation was a success.
+
         """
         return self._lock_api.set_autolock(lock=self, autolock=autolock)
+
 
 class YaleDoorManAPI:
     """Represents the yale doorman api.
@@ -250,7 +245,7 @@ class YaleDoorManAPI:
     _ENDPOINT_DEVICES_CONFIG = "/api/minigw/lock/config/"
     _ENDPOINT_DEVICES_UPDATE = "/api/panel/device/"
 
-    def __init__(self, auth: "YaleAuth") -> None:
+    def __init__(self, auth: YaleAuth) -> None:
         """Initialize the module."""
         self.auth = auth
 
@@ -265,13 +260,10 @@ class YaleDoorManAPI:
             >>> for lock in client.lock_api.locks():
             >>>     print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
+
         """
-        try:
-            devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+        devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
+
         for device in devices["data"]:
             if device["type"] == YaleLock.DEVICE_TYPE:
                 lock = YaleLock(device, lock_api=self)
@@ -293,6 +285,7 @@ class YaleDoorManAPI:
             >>> lock = client.lock_api.get("myfrontdoor"):
             >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
+
         """
         for lock in self.locks():
             if lock == name:
@@ -306,6 +299,7 @@ class YaleDoorManAPI:
 
         Notes:
             the lock object has methods to do this, see YaleLock:close()
+
         Args:
             lock: The lock you want to close.
 
@@ -319,6 +313,7 @@ class YaleDoorManAPI:
             >>> # lock.close() does the same thing!
             >>> print(lock)
             myfrontdoor [YaleLockState.LOCKED]
+
         """
         params = {
             "area": lock.area(),
@@ -327,14 +322,9 @@ class YaleDoorManAPI:
             "device_type": lock.device_type(),
             "request_value": "1",
         }
-        try:
-            operation_status = self.auth.post_authenticated(
-                self._ENDPOINT_DEVICES_CONTROL, params=params
-            )
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+        operation_status = self.auth.post_authenticated(
+            self._ENDPOINT_DEVICES_CONTROL, params=params
+        )
 
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
@@ -364,31 +354,28 @@ class YaleDoorManAPI:
             >>> # lock.open() does the same thing!
             >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
+
         """
         params = {"area": lock.area(), "zone": lock.zone(), "pincode": pin_code}
-        try:
-            operation_status = self.auth.post_authenticated(
-                self._ENDPOINT_DEVICES_UNLOCK, params=params
-            )
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+
+        operation_status = self.auth.post_authenticated(
+            self._ENDPOINT_DEVICES_UNLOCK, params=params
+        )
+
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
             lock.set_state(YaleLockState.UNLOCKED)
         return success
-    
-    def _put_lock_request(self, lock: YaleLock) -> bool:
-        """Api endpoints that seems to be called after device update. Not sure what it does or if it is needed.
-        In the yale app it is called after setting auto lock, volume, language, name, when device is deleted, when updateDevice is called (Not sure what that is) and when device is added.
+
+    def _put_lock_request(self, lock: YaleLock) -> bool:  # noqa: ARG002
+        """Call to api endpoint that seem to be after device update.
+
+        Not sure what it does or if it is needed.
+        In the yale app it is called after setting auto lock, volume, language, name, when device is deleted,
+        when updateDevice is called (Not sure what that is) and when device is added.
         """
-        try:
-            operation_status = self.auth.put_authenticated(self._ENDPOINT_DEVICES_UPDATE)
-        except AuthenticationError as error:
-            raise error
-        except RequestException as error:
-            raise error
+        operation_status = self.auth.put_authenticated(self._ENDPOINT_DEVICES_UPDATE)
+
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         return success
 
@@ -401,12 +388,13 @@ class YaleDoorManAPI:
 
         Returns:
             True if the operation was a success.
+
         """
         params = {
             "area": lock.area(),
             "zone": lock.zone(),
             "val": volume.value,
-            "idx": "01" # Hardcoded value in the app
+            "idx": "01",  # Hardcoded value in the app
         }
 
         operation_status = self.auth.post_authenticated(
@@ -415,11 +403,11 @@ class YaleDoorManAPI:
 
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
-            lock._config.volume = volume.value
+            lock._config.volume = volume.value  # noqa: SLF001
             # For some reason the app calls _put_lock_request after setting volume
             return self._put_lock_request(lock)
         return success
-    
+
     def set_autolock(self, lock: YaleLock, autolock: bool) -> bool:
         """Set the auto lock state of the lock.
 
@@ -429,12 +417,13 @@ class YaleDoorManAPI:
 
         Returns:
             True if the operation was a success.
+
         """
         params = {
             "area": lock.area(),
             "zone": lock.zone(),
-            "val": "FF" if autolock else "00", # Hardcoded value in the app
-            "idx": "02" # Hardcoded value in the app
+            "val": "FF" if autolock else "00",  # Hardcoded value in the app
+            "idx": "02",  # Hardcoded value in the app
         }
 
         operation_status = self.auth.post_authenticated(
@@ -443,7 +432,7 @@ class YaleDoorManAPI:
 
         success: bool = operation_status["code"] == self.CODE_SUCCESS
         if success:
-            lock._config.autolock = "FF" if autolock else "00"
+            lock._config.autolock = "FF" if autolock else "00"  # noqa: SLF001
             # For some reason the app calls _put_lock_request after setting auto lock
             return self._put_lock_request(lock)
         return success

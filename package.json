@@ -1,0 +1,14 @@
+{
+  "name": "pytrafikverket",
+  "version": "0.3.9",
+  "private": true,
+  "description": "Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API",
+  "scripts": {
+    "prettier": "prettier --write **/*.{json,js,md,yml,yaml}"
+  },
+  "author": "G Johansson <goran.johansson@shiftit.se>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "prettier": "3.3.2"
+  }
+}
