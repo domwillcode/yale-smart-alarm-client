@@ -82,9 +82,9 @@ class YaleLock:
     """This is an abstraction of a remove Yale lock.
 
     The object created by this class attempts to reflect the remote state,
-    and also has the possibilty of locking/unlocking the lock state.
+    and also has the possibility of locking/unlocking the lock state.
 
-    Objects of this class shall usually be craeted by the lock_api class.
+    Objects of this class shall usually be created by the lock_api class.
     """
 
     DEVICE_TYPE: str = "device_type.door_lock"

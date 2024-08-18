@@ -27,20 +27,20 @@ For full listing of function see functions.md
 
 #### Locks
 Iterate the connected locks
-```pyhon
+```python
 client = YaleSmartAlarmClient(username, password)
 for lock in client.lock_api.locks():
     print(lock)
 ```
 
 lock a single lock
-```pyhon
+```python
 lock = client.lock_api.get(name="myfrontdoor"):
 lock.close()
 ```
 
 unlock:
-```pyhon
+```python
 lock = client.lock_api.get(name="myfrontdoor"):
 lock.open(pin_code="1234566")
 ```
