@@ -34,7 +34,7 @@ class YaleSmartAlarmData:
     mode: dict[str, Any] | None = None
     status: dict[str, Any] | None = None
     cycle: dict[str, Any] | None = None
-    locks: dict[str,YaleLock] | None = None
+    locks: list[YaleLock] | None = None
     online: dict[str, Any] | None = None
     history: dict[str, Any] | None = None
     panel_info: dict[str, Any] | None = None
@@ -102,7 +102,7 @@ class YaleSmartAlarmClient:
             cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
             online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
             panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
-            locks = [lock for lock in self.lock_api.locks()]
+            locks = list(self.lock_api.locks())
         except Exception:
             _LOGGER.debug("Retry %d on get_information function", 4 - retry)
             if retry > 0:
@@ -111,7 +111,11 @@ class YaleSmartAlarmClient:
             raise
 
         return YaleSmartAlarmData(
-            status=status, cycle=cycle, online=online, panel_info=panel_info, locks=locks
+            status=status,
+            cycle=cycle,
+            online=online,
+            panel_info=panel_info,
+            locks=locks,
         )
 
     def get_all_devices(self, retry: int = 3) -> dict[str, Any]:
