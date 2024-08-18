@@ -76,12 +76,12 @@ class YaleSmartAlarmClient:
             history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
             panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
             auth_check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on get_all function", 4 - retry)
             if retry > 0:
                 time.sleep(5)
                 return self.get_all(retry - 1)
-            raise error
+            raise
 
         return YaleSmartAlarmData(
             devices=devices,
@@ -101,12 +101,12 @@ class YaleSmartAlarmClient:
             cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
             online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
             panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on get_information function", 4 - retry)
             if retry > 0:
                 time.sleep(5)
                 return self.get_information(retry - 1)
-            raise error
+            raise
 
         return YaleSmartAlarmData(
             status=status, cycle=cycle, online=online, panel_info=panel_info
@@ -116,38 +116,38 @@ class YaleSmartAlarmClient:
         """Return full json for all devices."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug(
                 "Retry %d on path %s", 4 - retry, self._ENDPOINT_DEVICES_STATUS
             )
             if retry > 0:
                 time.sleep(5)
                 return self.get_all_devices(retry - 1)
-            raise error
+            raise
         return cast(dict[str, Any], devices["data"])
 
     def get_cycle(self, retry: int = 3) -> dict[str, Any]:
         """Return full cycle."""
         try:
             cycle = self.auth.get_authenticated(self._ENDPOINT_CYCLE)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_CYCLE)
             if retry > 0:
                 time.sleep(5)
                 return self.get_cycle(retry - 1)
-            raise error
+            raise
         return cast(dict[str, Any], cycle["data"])
 
     def get_status(self, retry: int = 3) -> str:
         """Return status from system."""
         try:
             status = self.auth.get_authenticated(self._ENDPOINT_STATUS)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_STATUS)
             if retry > 0:
                 time.sleep(5)
                 return self.get_status(retry - 1)
-            raise error
+            raise
         acfail = status["data"]["acfail"]
         battery = status["data"]["battery"]
         tamper = status["data"]["tamper"]
@@ -160,62 +160,62 @@ class YaleSmartAlarmClient:
         """Return available from system."""
         try:
             online = self.auth.get_authenticated(self._ENDPOINT_ONLINE)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_ONLINE)
             if retry > 0:
                 time.sleep(5)
                 return self.get_online(retry - 1)
-            raise error
+            raise
         return cast(dict[str, Any], online["data"])
 
     def get_panel_info(self, retry: int = 3) -> dict[str, Any]:
         """Return panel information."""
         try:
             panel_info = self.auth.get_authenticated(self._ENDPOINT_PANEL_INFO)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_PANEL_INFO)
             if retry > 0:
                 time.sleep(5)
                 return self.get_panel_info(retry - 1)
-            raise error
+            raise
         return cast(dict[str, Any], panel_info["data"])
 
     def get_history(self, retry: int = 3) -> dict[str, Any]:
         """Return the log from the system."""
         try:
             history = self.auth.get_authenticated(self._ENDPOINT_HISTORY)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_HISTORY)
             if retry > 0:
                 time.sleep(5)
                 return self.get_history(retry - 1)
-            raise error
+            raise
         return cast(dict[str, Any], history["data"])
 
     def get_auth_check(self, retry: int = 3) -> dict[str, Any]:
         """Return the authorization check."""
         try:
             check = self.auth.get_authenticated(self._ENDPOINT_CHECK)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_CHECK)
             if retry > 0:
                 time.sleep(5)
                 return self.get_auth_check(retry - 1)
-            raise error
+            raise
         return cast(dict[str, Any], check["data"])
 
     def get_locks_status(self, retry: int = 3) -> dict[str, str]:
         """Return all locks status from the system."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug(
                 "Retry %d on path %s", 4 - retry, self._ENDPOINT_DEVICES_STATUS
             )
             if retry > 0:
                 time.sleep(5)
                 return self.get_locks_status(retry - 1)
-            raise error
+            raise
         locks: dict[str, str] = {}
         for device in devices["data"]:
             if device["type"] == "device_type.door_lock":
@@ -245,14 +245,14 @@ class YaleSmartAlarmClient:
         """Return all door contacts status from the system."""
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug(
                 "Retry %d on path %s", 4 - retry, self._ENDPOINT_DEVICES_STATUS
             )
             if retry > 0:
                 time.sleep(5)
                 return self.get_doors_status(retry - 1)
-            raise error
+            raise
         doors: dict[str, str] = {}
         for device in devices["data"]:
             if device["type"] == "device_type.door_contact":
@@ -271,12 +271,12 @@ class YaleSmartAlarmClient:
         """Get armed status."""
         try:
             alarm_state = self.auth.get_authenticated(self._ENDPOINT_GET_MODE)
-        except Exception as error:
+        except Exception:
             _LOGGER.debug("Retry %d on path %s", 4 - retry, self._ENDPOINT_GET_MODE)
             if retry > 0:
                 time.sleep(5)
                 return self.get_armed_status(retry - 1)
-            raise error
+            raise
         return cast(str, alarm_state.get("data", [])[0].get("mode"))
 
     def set_armed_status(self, mode: str) -> bool:
@@ -309,18 +309,15 @@ class YaleSmartAlarmClient:
 
     def arm_full(self) -> bool:
         """Arm away."""
-        response = self.set_armed_status(YALE_STATE_ARM_FULL)
-        return response
+        return self.set_armed_status(YALE_STATE_ARM_FULL)
 
     def arm_partial(self) -> bool:
         """Arm home."""
-        response = self.set_armed_status(YALE_STATE_ARM_PARTIAL)
-        return response
+        return self.set_armed_status(YALE_STATE_ARM_PARTIAL)
 
     def disarm(self) -> bool:
         """Disarm alarm."""
-        response = self.set_armed_status(YALE_STATE_DISARM)
-        return response
+        return self.set_armed_status(YALE_STATE_DISARM)
 
     def is_armed(self) -> bool:
         """Return True or False if the system is armed in any way."""

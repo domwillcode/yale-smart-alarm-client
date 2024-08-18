@@ -93,6 +93,7 @@ class YaleAuth:
 
         Args:
             endpoint: URL endpoint to connect to.
+            params: The parameters to send in the POST request
 
         Returns:
             A dictionary with the response.
