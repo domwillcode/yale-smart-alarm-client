@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 """Module for interacting with a Yale Doorman lock."""
 from __future__ import annotations
 
+from collections.abc import Iterator
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
-from collections.abc import Iterator
 
 from requests import RequestException
 
@@ -90,7 +89,7 @@ class YaleLock:
 
     DEVICE_TYPE: str = "device_type.door_lock"
 
-    def __init__(self, device: dict[str, Any], lock_api: "YaleDoorManAPI") -> None:
+    def __init__(self, device: dict[str, Any], lock_api: YaleDoorManAPI) -> None:
         """Initialize a Yale lock device."""
         self._lock_api = lock_api
         self._device: dict[str, Any] = device
@@ -189,7 +188,7 @@ class YaleLock:
             raise error
         except RequestException as error:
             raise error
-    
+
     def set_volume(self, volume: YaleLockVolume) -> bool:
         """Set the volume of the lock.
 
@@ -198,9 +197,10 @@ class YaleLock:
 
         Returns:
             True if the operation was a success.
+
         """
         return self._lock_api.set_volume(lock=self, volume=volume)
-    
+
     def set_autolock(self, autolock: bool) -> bool:
         """Set the auto lock state of the lock.
 
@@ -209,6 +209,7 @@ class YaleLock:
 
         Returns:
             True if the operation was a success.
+
         """
         return self._lock_api.set_autolock(lock=self, autolock=autolock)
 
@@ -250,7 +251,7 @@ class YaleDoorManAPI:
     _ENDPOINT_DEVICES_CONFIG = "/api/minigw/lock/config/"
     _ENDPOINT_DEVICES_UPDATE = "/api/panel/device/"
 
-    def __init__(self, auth: "YaleAuth") -> None:
+    def __init__(self, auth: YaleAuth) -> None:
         """Initialize the module."""
         self.auth = auth
 
@@ -265,6 +266,7 @@ class YaleDoorManAPI:
             >>> for lock in client.lock_api.locks():
             >>>     print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
+
         """
         try:
             devices = self.auth.get_authenticated(self._ENDPOINT_DEVICES_STATUS)
@@ -293,6 +295,7 @@ class YaleDoorManAPI:
             >>> lock = client.lock_api.get("myfrontdoor"):
             >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
+
         """
         for lock in self.locks():
             if lock == name:
@@ -306,6 +309,7 @@ class YaleDoorManAPI:
 
         Notes:
             the lock object has methods to do this, see YaleLock:close()
+
         Args:
             lock: The lock you want to close.
 
@@ -319,6 +323,7 @@ class YaleDoorManAPI:
             >>> # lock.close() does the same thing!
             >>> print(lock)
             myfrontdoor [YaleLockState.LOCKED]
+
         """
         params = {
             "area": lock.area(),
@@ -364,6 +369,7 @@ class YaleDoorManAPI:
             >>> # lock.open() does the same thing!
             >>> print(lock)
             myfrontdoor [YaleLockState.UNLOCKED]
+
         """
         params = {"area": lock.area(), "zone": lock.zone(), "pincode": pin_code}
         try:
@@ -378,7 +384,7 @@ class YaleDoorManAPI:
         if success:
             lock.set_state(YaleLockState.UNLOCKED)
         return success
-    
+
     def _put_lock_request(self, lock: YaleLock) -> bool:
         """Api endpoints that seems to be called after device update. Not sure what it does or if it is needed.
         In the yale app it is called after setting auto lock, volume, language, name, when device is deleted, when updateDevice is called (Not sure what that is) and when device is added.
@@ -401,6 +407,7 @@ class YaleDoorManAPI:
 
         Returns:
             True if the operation was a success.
+
         """
         params = {
             "area": lock.area(),
@@ -419,7 +426,7 @@ class YaleDoorManAPI:
             # For some reason the app calls _put_lock_request after setting volume
             return self._put_lock_request(lock)
         return success
-    
+
     def set_autolock(self, lock: YaleLock, autolock: bool) -> bool:
         """Set the auto lock state of the lock.
 
@@ -429,6 +436,7 @@ class YaleDoorManAPI:
 
         Returns:
             True if the operation was a success.
+
         """
         params = {
             "area": lock.area(),

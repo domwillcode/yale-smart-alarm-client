@@ -3,26 +3,25 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, cast
-from dataclasses import dataclass
-
 import time
+from dataclasses import dataclass
+from typing import Any, cast
 
 from .auth import YaleAuth
-from .lock import YaleDoorManAPI
 from .const import (
     YALE_CODE_RESULT_SUCCESS,
-    YALE_STATE_ARM_FULL,
-    YALE_STATE_ARM_PARTIAL,
-    YALE_STATE_DISARM,
-    YALE_LOCK_STATE_LOCKED,
-    YALE_LOCK_STATE_UNLOCKED,
-    YALE_LOCK_STATE_DOOR_OPEN,
-    YALE_LOCK_STATE_UNKNOWN,
     YALE_DOOR_CONTACT_STATE_CLOSED,
     YALE_DOOR_CONTACT_STATE_OPEN,
     YALE_DOOR_CONTACT_STATE_UNKNOWN,
+    YALE_LOCK_STATE_DOOR_OPEN,
+    YALE_LOCK_STATE_LOCKED,
+    YALE_LOCK_STATE_UNKNOWN,
+    YALE_LOCK_STATE_UNLOCKED,
+    YALE_STATE_ARM_FULL,
+    YALE_STATE_ARM_PARTIAL,
+    YALE_STATE_DISARM,
 )
+from .lock import YaleDoorManAPI
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -286,8 +285,10 @@ class YaleSmartAlarmClient:
         Arguments:
             mode: Alarm arm state. One of `YALE_STATE_ARM_FULL`, `YALE_STATE_ARM_PARTIAL`,
             or `YALE_STATE_DISARM`.
+
         Returns:
             Api response from the arm request.
+
         """
         params = {
             self._REQUEST_PARAM_AREA: self.area_id,

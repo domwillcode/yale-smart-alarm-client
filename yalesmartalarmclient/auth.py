@@ -7,22 +7,22 @@ from typing import Any, cast
 
 import requests
 from requests.exceptions import (  # pylint: disable=redefined-builtin
-    HTTPError,
     ConnectionError,
-    Timeout,
+    HTTPError,
     RequestException,
+    Timeout,
 )
 
-from .exceptions import AuthenticationError, UnknownError
 from .const import (
-    HOST,
-    ENDPOINT_TOKEN,
-    ENDPOINT_SERVICES,
-    YALE_AUTH_TOKEN,
-    YALE_AUTHENTICATION_REFRESH_TOKEN,
-    YALE_AUTHENTICATION_ACCESS_TOKEN,
     DEFAULT_REQUEST_TIMEOUT,
+    ENDPOINT_SERVICES,
+    ENDPOINT_TOKEN,
+    HOST,
+    YALE_AUTH_TOKEN,
+    YALE_AUTHENTICATION_ACCESS_TOKEN,
+    YALE_AUTHENTICATION_REFRESH_TOKEN,
 )
+from .exceptions import AuthenticationError, UnknownError
 
 _LOGGER = logging.getLogger(__name__)
 
