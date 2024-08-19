@@ -129,16 +129,9 @@ class YaleSmartAlarmClient:
             raise
         return cast(dict[str, Any], devices["data"])
 
-    def get_locks(self, retry: int = 3) -> list[YaleLock]:
+    def get_locks(self) -> list[YaleLock]:
         """Return all locks."""
-        try:
-            return list(self.lock_api.locks())
-        except Exception:
-            _LOGGER.debug("Retry %d on path self.lock_api.locks()", 4 - retry)
-            if retry > 0:
-                time.sleep(5)
-                return self.get_locks(retry - 1)
-            raise
+        return self.lock_api.locks
 
     def get_cycle(self, retry: int = 3) -> dict[str, Any]:
         """Return full cycle."""
