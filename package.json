@@ -1,6 +1,6 @@
 {
   "name": "yalesmartalarmclient",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "description": "Yale Smart Alarm client is a python client for interacting with the Yale Smart Alarm System API",
   "scripts": {
