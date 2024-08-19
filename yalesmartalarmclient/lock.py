@@ -248,8 +248,9 @@ class YaleDoorManAPI:
     def __init__(self, auth: YaleAuth) -> None:
         """Initialize the module."""
         self.auth = auth
+        self.locks = list(self.get_locks())
 
-    def locks(self) -> Iterator[YaleLock]:
+    def get_locks(self) -> Iterator[YaleLock]:
         """Iterate through the locks we have available for this user.
 
         Yields: the locks
@@ -269,6 +270,28 @@ class YaleDoorManAPI:
                 lock = YaleLock(device, lock_api=self)
                 yield lock
 
+    def update_locks(self, devices: list[dict[str, Any]]) -> None:
+        """Update the locks we have available for this user.
+
+        Args:
+            devices: list of device data
+
+        Returns:
+            None
+
+        Example:
+            >>> from yalesmartalarmclient.client import YaleSmartAlarmClient
+            >>> client = YaleSmartAlarmClient(username="", password="")
+            >>> client.update_locks(devices)
+
+        """
+
+        for device in devices:
+            if device["type"] == YaleLock.DEVICE_TYPE:
+                lock = self.get(device["name"])
+                if lock:
+                    lock.update(device)
+
     def get(self, name: str) -> YaleLock | None:
         """Get a single lock with matching name.
 
@@ -287,7 +310,7 @@ class YaleDoorManAPI:
             myfrontdoor [YaleLockState.UNLOCKED]
 
         """
-        for lock in self.locks():
+        for lock in self.locks:
             if lock == name:
                 return lock
         return None
