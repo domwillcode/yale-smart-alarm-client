@@ -147,8 +147,8 @@ class YaleLock:
     def _calc_state(self) -> YaleLockState:
         raw_state: str = self._device["status1"]
 
-        lock_status_str = self._device["minigw_lock_status"]
-        if lock_status_str != "":
+        lock_status_str: str | None = self._device.get("minigw_lock_status")
+        if lock_status_str and lock_status_str != "":
             lock_status = int(lock_status_str, 16)
             closed = (lock_status & 16) == 16
             locked = (lock_status & 1) == 1
