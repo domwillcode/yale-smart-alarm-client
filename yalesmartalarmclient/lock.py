@@ -140,6 +140,18 @@ class YaleLock:
         """Return the lock zone."""
         return cast(str, self._device["no"])
 
+    def supports_lock_config(self) -> bool:
+        """Return if the lock supports configuration."""
+        return "minigw_configuration_data" in self._device
+
+    def autolock(self) -> bool:
+        """Return the lock auto lock state."""
+        return self._config.autolock == "FF"
+
+    def volume(self) -> YaleLockVolume:
+        """Return the lock volume."""
+        return YaleLockVolume(self._config.volume)
+
     def set_state(self, new_state: YaleLockState) -> None:
         """Update the device state with new_state."""
         self._state = new_state
