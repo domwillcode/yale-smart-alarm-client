@@ -35,7 +35,7 @@ requests = "^2.32.0"
 aresponses = "3.0.0"
 codespell = "2.3.0"
 covdefaults = "2.3.0"
-coverage = {version = "7.6.8", extras = ["toml"]}
+coverage = {version = "7.6.9", extras = ["toml"]}
 mypy = "1.13.0"
 pre-commit = "3.8.0"
 pre-commit-hooks = "4.6.0"
