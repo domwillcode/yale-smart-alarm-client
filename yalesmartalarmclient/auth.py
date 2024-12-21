@@ -7,7 +7,7 @@ from typing import Any, cast
 
 import requests
 from requests.exceptions import (  # pylint: disable=redefined-builtin
-    ConnectionError,
+    ConnectionError,  # noqa: A004
     HTTPError,
     RequestException,
     Timeout,
