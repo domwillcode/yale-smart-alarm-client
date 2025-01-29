@@ -33,7 +33,7 @@ requests = "^2.32.0"
 
 [tool.poetry.group.dev.dependencies]
 aresponses = "3.0.0"
-codespell = "2.4.0"
+codespell = "2.4.1"
 covdefaults = "2.3.0"
 coverage = {version = "7.6.10", extras = ["toml"]}
 mypy = "1.14.1"
