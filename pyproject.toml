@@ -47,7 +47,7 @@ ruff = "0.8.6"
 safety = "3.3.1"
 yamllint = "1.35.1"
 syrupy = "4.8.2"
-types-requests = "2.32.0.20250301"
+types-requests = "2.32.0.20250306"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/domwillcode/yale-smart-alarm-client/issues"
