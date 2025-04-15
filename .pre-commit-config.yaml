@@ -8,7 +8,7 @@ repos:
         types: [python]
         entry: poetry run ruff check --fix
         require_serial: true
-        stages: [commit, push, manual]
+        stages: [pre-commit, pre-push, manual]
       - id: ruff black
         name: ☕️ Format using ruff
         language: system
@@ -81,7 +81,7 @@ repos:
         language: system
         types: [text]
         entry: poetry run end-of-file-fixer
-        stages: [commit, push, manual]
+        stages: [pre-commit, pre-push, manual]
       - id: mypy
         name: 🆎 Static type checking using mypy
         language: system
@@ -118,7 +118,7 @@ repos:
         language: system
         types: [text]
         entry: poetry run trailing-whitespace-fixer
-        stages: [commit, push, manual]
+        stages: [pre-commit, pre-push, manual]
       - id: yamllint
         name: 🎗  Check YAML files with yamllint
         language: system
