@@ -179,12 +179,11 @@ class YaleAuth:
 
     def _update_services(self) -> None:
         data = self.get_authenticated(ENDPOINT_SERVICES)
-        url = data.get("yapi")
+        url: str | None = data.get("yapi")
         if url is not None:
             if len(url) > 0:
                 _LOGGER.debug("Yale URL updated: %s", url)
-                if url.endswith("/"):
-                    url = url[:-1]
+                url.removesuffix("/")
                 self._host = url
             else:
                 _LOGGER.debug("Services URL is empty")
