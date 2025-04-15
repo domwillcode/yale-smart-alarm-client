@@ -435,7 +435,8 @@ ignore = [
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "N818", # Exception name {name} should be named with an Error suffix
     "S101", # Use of assert detected
-    "TC001" # Move application import {} into a type-checking block
+    "TC001", # Move application import {} into a type-checking block
+    "TC006" # Add quotes to type expression in `typing.cast()`
 ]
 select = ["ALL"]
 
