@@ -109,6 +109,10 @@ class YaleLock:
             return self.name == other
         return False
 
+    def __hash__(self) -> int:
+        """Lock hash."""
+        return hash(self.name)
+
     def __str__(self) -> str:
         """Return string representation of a lock."""
         return f"{self.name} [{self.state()}]"
