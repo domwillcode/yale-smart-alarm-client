@@ -431,7 +431,6 @@ ignore = [
     "B008", # Do not perform function call {name} in argument defaults
     "EM102", # Exception must not use an f-string literal, assign to variable first
     "DTZ007", # Naive datetime constructed using datetime.datetime.strptime() without %z
-    "S320", # Using lxml to parse untrusted data is known to be vulnerable to XML attacks
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "N818", # Exception name {name} should be named with an Error suffix
     "S101", # Use of assert detected
