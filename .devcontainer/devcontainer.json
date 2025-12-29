@@ -57,7 +57,7 @@
         "installTools": false
       }
     },
-    "image": "mcr.microsoft.com/devcontainers/python:2-3.12",
+    "image": "mcr.microsoft.com/devcontainers/python:3-3.12",
     "name": "yalesmartalarmclient",
     "updateContentCommand": ". ${NVM_DIR}/nvm.sh && nvm install && nvm use && npm install && poetry install && poetry check"
   }
