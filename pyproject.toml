@@ -57,7 +57,7 @@ ruff = "0.14.10"
 safety = "3.7.0"
 yamllint = "1.37.1"
 syrupy = "5.0.0"
-types-requests = "2.32.4.20250913"
+types-requests = "2.32.4.20260107"
 
 
 
