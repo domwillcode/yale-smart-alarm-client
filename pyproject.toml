@@ -56,7 +56,7 @@ pytest-cov = "7.1.0"
 ruff = "0.15.15"
 safety = "3.8.1"
 yamllint = "1.38.0"
-syrupy = "5.2.0"
+syrupy = "5.3.1"
 types-requests = "2.33.0.20260518"
 
 
