@@ -49,7 +49,7 @@ coverage = {version = "7.15.4", extras = ["toml"]}
 mypy = "2.3.0"
 pre-commit = "4.6.1"
 pre-commit-hooks = "6.0.0"
-pylint = "4.0.6"
+pylint = "4.0.7"
 pytest = "9.1.1"
 pytest-asyncio = "1.4.0"
 pytest-cov = "7.1.0"
